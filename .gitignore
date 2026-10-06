@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.import_linter_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local configuration and secrets
+.env
+
+# Downloaded source documents and built indexes (reproducible via `make data`)
+data/raw/
+data/index/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

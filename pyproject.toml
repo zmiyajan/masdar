@@ -1,0 +1,100 @@
+[project]
+name = "masdar"
+version = "0.1.0"
+description = "Arabic-first retrieval engine for Saudi regulations, with measurable search quality."
+readme = "README.md"
+authors = [
+    { name = "Ziyad Miyajan", email = "zmiyajan@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+# The core is intentionally dependency-free so far: every library is added in the
+# phase that needs it, and heavy ML packages will live behind optional extras.
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.160",
+    "import-linter>=2.15",
+    "mypy>=2.4",
+    "pre-commit>=4.6",
+    "pytest>=9.1",
+    "pytest-cov>=7.1",
+    "ruff>=0.16",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.18,<0.12.0"]
+build-backend = "uv_build"
+
+# --------------------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "D",        # pydocstyle
+    "UP",       # pyupgrade
+    "B",        # bugbear
+    "S",        # bandit (security)
+    "C4",       # comprehensions
+    "SIM",      # simplify
+    "RET",      # return statements
+    "ARG",      # unused arguments
+    "PT",       # pytest style
+    "PL",       # pylint
+    "TID",      # tidy imports
+    "RUF",      # ruff-specific
+]
+# RUF001-003 flag Arabic letters as "confusable" with Latin ones (e.g. ا vs l).
+# In an Arabic-first codebase that is noise, not risk. Invisible and bidi control
+# characters are still caught by PLE2502/PLE2515.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "D", "PLR2004"]
+
+# ---------------------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+files = ["src", "tests"]
+
+# -------------------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+testpaths = ["tests", "src"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--doctest-modules"]
+xfail_strict = true
+
+[tool.coverage.run]
+source = ["masdar"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = true
+
+# ------------------------------------------------------------------- import-linter
+# Architecture rules, enforced in CI. See docs/decisions/0001-ports-and-adapters.md.
+[tool.importlinter]
+root_package = "masdar"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Domain does not import the outer layers (third parties: tests/unit/test_architecture.py)"
+type = "forbidden"
+source_modules = ["masdar.domain"]
+forbidden_modules = ["masdar.ports", "masdar.adapters", "masdar.app", "masdar.entrypoints"]

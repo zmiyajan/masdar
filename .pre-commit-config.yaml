@@ -1,0 +1,35 @@
+# Fast checks that run on every commit. CI runs the full `make check` plus
+# secret scanning (gitleaks) and a dependency audit.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.10
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (strict)
+        entry: uv run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: import-linter
+        name: architecture boundaries
+        entry: uv run lint-imports
+        language: system
+        types: [python]
+        pass_filenames: false
