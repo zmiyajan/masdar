@@ -6,6 +6,7 @@ The generators are biased towards Arabic: plain ``st.text()`` almost never
 produces Arabic code points, so it would leave the interesting cases untested.
 """
 
+import dataclasses
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
@@ -34,7 +35,12 @@ arabic_text = st.text(
         st.characters(min_codepoint=0x20, max_codepoint=0x7E),  # ASCII
     )
 )
-any_options = st.builds(NormalizationOptions)
+# builds() only infers *required* arguments; every option has a default, so each
+# field must be given explicitly or Hypothesis would only ever test the defaults.
+any_options = st.builds(
+    NormalizationOptions,
+    **{f.name: st.booleans() for f in dataclasses.fields(NormalizationOptions)},
+)
 
 
 @pytest.mark.parametrize(
