@@ -84,14 +84,20 @@ for display and citations, and a separate `normalized_text` used only for matchi
 | domain | `answer.py` | Verbatim sentence splitting, `Evidence` (must quote its article), `Answer`, answer quality report (ADR-0009) |
 | adapters | `out_of_scope_jsonl.py` | Questions the corpus does not answer, for measuring abstention |
 | app | `answer.py` | `AnswerService`: quote the best sentences of the law or refuse below a calibrated threshold |
+| domain | `quantities.py` | Arabic quantities (digits, number words, duals, fractions, %) with spans |
+| domain | `compliance.py`, `labor_rules.py` | Clause splitting, conservative rule matching; 16 Labor Law limits pinned to the text in force (ADR-0010) |
+| domain | `checker_quality.py` | Per-verdict precision and recall on labeled clauses |
+| adapters | `clauses_jsonl.py` | Labeled clauses (development and blind sets) |
+| app | `check_contract.py` | `CheckContract`: verdicts plus related articles per clause |
+| ports | `pair_scorer.py` | Scores (question, passage) pairs; shared by reranking and answers |
 | adapters | `eval_writer.py` | `eval/results/*.json`, generated `eval/RESULTS.md`, `eval/baseline.json` |
 | app | `build_dataset.py` | Load, resolve, validate integrity, write |
 | app | `evaluate.py` | Run a `SearchService` over the gold set and score articles |
 | app | `search.py`, `hybrid.py` | `SearchService` (retrieve, rerank, collapse, filter); `HybridRetriever` |
 | entrypoints | `cli.py` | `masdar dataset [--offline \| --refresh] [--laws ...]`, `masdar eval`, `masdar search` |
-| entrypoints | `api.py`, `security.py`, `schemas.py` | FastAPI: `/api/search`, `/api/laws`, `/api/health`; CSP, rate limit (ADR-0008) |
+| entrypoints | `api.py`, `security.py`, `schemas.py` | FastAPI: `/api/search`, `/api/answer`, `/api/check`, `/api/laws`, `/api/health`; CSP, rate limit (ADR-0008) |
 | entrypoints | `web/` | Arabic-first RTL search page, no framework, no inline script |
-| entrypoints | `mcp_server.py` | MCP tools `search_regulations` and `get_article` for AI agents |
+| entrypoints | `mcp_server.py` | MCP tools `search_regulations`, `answer_question`, `check_contract`, `get_article` for AI agents |
 | root | `config.py`, `container.py` | Validated settings; composition root with the pipeline registry (`MASDAR_PIPELINE`) |
 
 **Dataset flow:** `BoeClient` (snapshot or HTTP) → `parse_law_html` → `PublishedLaw` →

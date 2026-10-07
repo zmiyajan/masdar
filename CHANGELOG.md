@@ -34,3 +34,11 @@ uses [Semantic Versioning](https://semver.org/).
 - Interfaces: Arabic web UI, REST API (`/api/search`, `/api/laws`, `/api/health`) with CSP and
   rate limiting, `masdar search`, and an MCP server (`search_regulations`, `get_article`).
 - Docker image for Hugging Face Spaces (non-root, CPU-only torch, models baked in) (ADR-0008).
+- Extractive answers: `AnswerService` quotes the law's own sentences verbatim with the article
+  citation, or answers "not found" below a threshold calibrated on held-out folds; 32
+  out-of-scope questions measure abstention (ADR-0009). `GET /api/answer`, `masdar answer`, MCP
+  `answer_question`, and an answer card in the web UI.
+- Contract and HR-policy checker: clause splitting, Arabic quantity extraction, and
+  deterministic verdicts for 16 Labor Law limits pinned to the text in force, with related
+  articles per clause (no LLM, no API); a development set and an independently written blind
+  set (ADR-0010). `POST /api/check`, `masdar check`, MCP `check_contract`, and a web section.
