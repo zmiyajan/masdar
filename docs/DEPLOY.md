@@ -109,7 +109,9 @@ git push        # authenticate with your HF username and the write token
 ### After pushing
 - The Space builds the Dockerfile; follow progress in the Space's **Logs** tab.
 - When it shows **Running**, open `https://<hf-user>-masdar.hf.space/api/health`.
-- Try the four example questions in the UI and check that the citations and source links work.
+- Click each example question: four are answered with a quote, the traffic one is refused.
+- In "افحص عقداً", click "جرّب عقداً نموذجياً": four violations, each citing its article.
+- Check that citations and source links open the official pages.
 - No secrets are needed: the core runs on local models only.
 - **Check the proxy depth once.** The rate limit trusts `MASDAR_TRUSTED_PROXY_HOPS=1` proxy.
   Send 31 quick requests to `/api/search` with a made-up `X-Forwarded-For: 1.2.3.4` header: the

@@ -108,14 +108,17 @@ ones, because the small reranker is sensitive to wording.
 
 ### Contract checker ([ADR-0010](docs/decisions/0010-contract-checker-rules-as-code.md))
 16 quantitative Labor Law limits (probation, notice, leave, working hours, non-compete, loan
-deductions…), each pinned by a test to the article's text **in force**. Five of them differ from
-the text the official portal displays (for example probation 90 → 180 days, maternity leave 10 →
-12 weeks). Anything uncertain is "review needed", never a verdict.
+deductions…), each pinned by a test to the article's text **in force**. Several differ from the
+text the official portal displays (for example probation 90 → 180 days and maternity leave 10 →
+12 weeks, both checked against the original wording by a test). Anything uncertain is "review needed", never a verdict.
 
 | Clause set | Written by | Violation precision | Violation recall | Compliant precision |
 |---|---|---|---|---|
 | `development` | the rules' author | 1.00 | 1.00 | 1.00 |
-| `blind-v2` | an independent author, after v2 | 1.00 | 0.28 | 0.91 |
+| `blind-v2` | an independent author, after v2 | 1.00 | 0.28 | 0.91¹ |
+
+¹ 0.83 as first measured; two false "compliant" verdicts broke the checker's written policy and
+were fixed generically, so this cell is no longer blind. The violation columns are untouched.
 
 **A flag is reliable; silence is not.** Across two independently written blind sets the checker
 never called a compliant clause a violation, but it finds only a minority of violations worded in

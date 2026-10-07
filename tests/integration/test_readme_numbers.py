@@ -12,6 +12,8 @@ from typing import Any
 
 import pytest
 
+from masdar.domain.labor_rules import LABOR_RULES
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 README = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
@@ -97,7 +99,7 @@ def test_answer_table_matches_the_answer_report() -> None:
 def test_checker_table_matches_the_checker_report() -> None:
     reports = _json("checker.json")
     rows = re.findall(
-        r"^\| `([^`]+)` \|[^|]*((?:\| [0-9.]+ )+)\|$", _section("Contract checker"), re.M
+        r"^\| `([^`]+)` \|[^|]*((?:\| [0-9.]+¹? )+)\|$", _section("Contract checker"), re.M
     )
     assert {name for name, _ in rows} == {"development", "blind-v2"}
     for name, cells in rows:
@@ -108,3 +110,9 @@ def test_checker_table_matches_the_checker_report() -> None:
             kinds["compliant"]["precision"],
         ]
         assert _cells(cells) == pytest.approx([round(v, 2) for v in expected], abs=5e-3), name
+
+
+def test_counts_in_the_prose() -> None:
+    answers = _json("answers.json")
+    assert f"| {answers['gold_questions']} gold + {answers['out_of_scope_questions']} " in README
+    assert f"{len(LABOR_RULES)} quantitative Labor Law limits" in README
