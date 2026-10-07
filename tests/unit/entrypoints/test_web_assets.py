@@ -90,3 +90,8 @@ def test_links_to_the_repository() -> None:
 def example_questions() -> list[str]:
     """The questions on the example chips, in page order."""
     return re.findall(r'data-question="([^"]+)"', INDEX)
+
+
+def test_only_question_chips_trigger_a_search() -> None:
+    # The sample-contract button shares the chip style but carries no question.
+    assert 'querySelectorAll(".chip[data-question]")' in SCRIPT

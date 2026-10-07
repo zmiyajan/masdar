@@ -347,7 +347,7 @@
     search(question);
   });
 
-  document.querySelectorAll(".chip").forEach((chip) => {
+  document.querySelectorAll(".chip[data-question]").forEach((chip) => {
     chip.addEventListener("click", () => {
       input.value = chip.dataset.question;
       search(input.value);
