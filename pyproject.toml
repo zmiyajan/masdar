@@ -109,7 +109,10 @@ ignore_missing_imports = true
 # -------------------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
 testpaths = ["tests", "src"]
-addopts = ["-ra", "--strict-markers", "--strict-config", "--doctest-modules"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--doctest-modules", "-m", "not slow"]
+markers = [
+    "slow: loads real ML models (downloads on first run); run with `make test-slow`",
+]
 xfail_strict = true
 
 [tool.coverage.run]

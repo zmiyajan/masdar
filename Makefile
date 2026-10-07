@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 UV := uv run
 
-.PHONY: help setup fmt lint typecheck arch test audit check dataset dataset-refresh eval serve mcp clean
+.PHONY: help setup fmt lint typecheck arch test test-slow audit check dataset dataset-refresh eval serve mcp clean
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -26,6 +26,9 @@ arch: ## Enforce architecture boundaries (import-linter)
 
 test: ## Run tests with coverage gate
 	$(UV) pytest --cov
+
+test-slow: ## Run the tests that load real ML models
+	$(UV) pytest -m slow
 
 audit: ## Scan the locked dependencies (hash-pinned) for known vulnerabilities
 	uv export --locked --all-groups --no-emit-project --format requirements-txt --quiet \
