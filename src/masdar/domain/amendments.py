@@ -199,8 +199,34 @@ def extract_quoted_text(note: str) -> str | None:
     end = note.rfind(_QUOTE_CLOSE[opening.group(1)])
     if end <= start:
         return None
-    text = note[start:end].strip()
+    text = drop_unbalanced_quotes(note[start:end])
     return text or None
+
+
+def drop_unbalanced_quotes(text: str) -> str:
+    """Trim text and remove a stray quote mark left over from nested quoting.
+
+    Notes sometimes quote each redrafted article separately inside the outer
+    quote (``"المادة ...: ...". "المادة ..."``), so a slice can start or end
+    with a quote that has no partner. A mark is dropped only when the quotes
+    are unbalanced, so legitimately quoted phrases are kept, and so is any
+    final period.
+
+    Examples:
+        >>> drop_unbalanced_quotes('يعاقب كل من يخالف".')
+        'يعاقب كل من يخالف.'
+        >>> drop_unbalanced_quotes('يضاف "أو من ينيبه" بعد الوزير')
+        'يضاف "أو من ينيبه" بعد الوزير'
+    """
+    text = text.strip()
+    if text.count('"') % 2 == 1:
+        if text.startswith('"'):
+            text = text[1:].lstrip()
+        else:
+            body, _, tail = text.rpartition('"')
+            if tail.strip() in {"", "."}:
+                text = (body.rstrip() + tail.strip()).strip()
+    return text
 
 
 def _decree(normalized: str) -> str | None:
@@ -309,7 +335,12 @@ def split_consolidated_text(
     slices: dict[ArticleNumber, str] = {}
     for index, (_, body_start, number) in enumerate(starts):
         body_end = starts[index + 1][0] if index + 1 < len(starts) else len(text)
-        body = text[body_start:body_end].strip()
+        # Each redrafted article may sit in its own quotes inside the note:
+        # "المادة ...: ...". "المادة ...: ..." -- drop the marks between them.
+        body = text[body_start:body_end].rstrip()
+        if index + 1 < len(starts) and body.endswith(tuple(_QUOTE_CLOSE)):
+            body = body[:-1]  # the opening quote of the next redrafted article
+        body = drop_unbalanced_quotes(body)
         if body:
             slices[number] = body
     return slices

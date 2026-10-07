@@ -1,13 +1,13 @@
 .DEFAULT_GOAL := help
 UV := uv run
 
-.PHONY: help setup fmt lint typecheck arch test audit check dataset dataset-refresh clean
+.PHONY: help setup fmt lint typecheck arch test audit check dataset dataset-refresh eval serve mcp clean
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
 
-setup: ## Install dependencies and git hooks
-	uv sync
+setup: ## Install dependencies (including the ML extra) and git hooks
+	uv sync --all-extras
 	$(UV) pre-commit install
 
 fmt: ## Auto-format and apply safe lint fixes
@@ -38,6 +38,15 @@ dataset: ## Build the BEIR corpus + dataset card from committed snapshots (offli
 
 dataset-refresh: ## Re-download source pages (10s crawl delay), then rebuild
 	$(UV) masdar dataset --refresh
+
+eval: ## Evaluate every retrieval pipeline on the gold set; writes eval/results/
+	$(UV) masdar eval
+
+serve: ## Run the web app and API on http://localhost:8000
+	$(UV) uvicorn masdar.entrypoints.api:create_app --factory --port 8000
+
+mcp: ## Run the MCP server (stdio) exposing the search_regulations tool
+	$(UV) masdar-mcp
 
 clean: ## Remove caches and build artifacts
 	rm -rf .mypy_cache .ruff_cache .pytest_cache .hypothesis .import_linter_cache .coverage htmlcov dist

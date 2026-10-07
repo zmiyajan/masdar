@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     Attributes:
         snapshot_dir: Gzip snapshots of the source pages (committed to git).
         dataset_dir: Where ``make dataset`` writes the BEIR corpus and card.
+        gold_path: The gold question set (JSON Lines, one question per line).
         crawl_delay_seconds: Pause between portal requests; robots.txt asks for
             at least 10 seconds, so lower values are rejected.
         http_timeout_seconds: Timeout for one portal request.
@@ -29,6 +30,7 @@ class Settings(BaseSettings):
 
     snapshot_dir: Path = Path("data/sources/boe")
     dataset_dir: Path = Path("data/dataset")
+    gold_path: Path = Path("data/gold/queries.v1.jsonl")
     crawl_delay_seconds: float = Field(
         default=ROBOTS_CRAWL_DELAY_SECONDS, ge=ROBOTS_CRAWL_DELAY_SECONDS
     )

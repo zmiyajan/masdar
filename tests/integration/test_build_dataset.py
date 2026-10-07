@@ -11,6 +11,7 @@ from masdar.domain.articles import ArticleSource, PublishedLaw
 from masdar.domain.chunking import ChunkingOptions
 from masdar.domain.dataset import DatasetReport
 from masdar.domain.errors import DataIntegrityError
+from masdar.domain.gold import GoldQuery, QueryStyle
 from masdar.domain.models import Article
 
 CONSOLIDATE = (
@@ -35,10 +36,17 @@ class MemoryWriter:
     def __init__(self) -> None:
         self.articles: list[Article] = []
         self.report: DatasetReport | None = None
+        self.queries: list[GoldQuery] = []
 
-    def write(self, articles: Sequence[Article], report: DatasetReport) -> None:
+    def write(
+        self,
+        articles: Sequence[Article],
+        report: DatasetReport,
+        queries: Sequence[GoldQuery] = (),
+    ) -> None:
         self.articles = list(articles)
         self.report = report
+        self.queries = list(queries)
 
 
 def published(law_id: str, *sources: ArticleSource) -> PublishedLaw:
@@ -47,9 +55,29 @@ def published(law_id: str, *sources: ArticleSource) -> PublishedLaw:
     )
 
 
-def run(*laws: PublishedLaw, law_ids: list[str] | None = None) -> MemoryWriter:
+class FakeGold:
+    version = "v-test"
+
+    def __init__(self, *queries: GoldQuery) -> None:
+        self._queries = queries
+
+    def load(self) -> tuple[GoldQuery, ...]:
+        return self._queries
+
+
+def gold(query_id: str, *article_ids: str) -> GoldQuery:
+    relevant = tuple((article_id, 2) for article_id in article_ids)
+    return GoldQuery(query_id, "سؤال", relevant, "topic", QueryStyle.FORMAL)
+
+
+def run(
+    *laws: PublishedLaw, law_ids: list[str] | None = None, gold_set: FakeGold | None = None
+) -> MemoryWriter:
     writer = MemoryWriter()
-    BuildDataset(FakeSource(*laws), writer, ArabicNormalizer(), ChunkingOptions()).run(law_ids)
+    use_case = BuildDataset(
+        FakeSource(*laws), writer, ArabicNormalizer(), ChunkingOptions(), gold=gold_set
+    )
+    use_case.run(law_ids)
     return writer
 
 
@@ -98,3 +126,30 @@ def test_refuses_to_publish_ambiguous_numbering() -> None:
         run(
             published("a", ArticleSource("المادة الأولى", "أ"), ArticleSource("المادة الأولى", "ب"))
         )
+
+
+def test_gold_questions_are_passed_to_the_writer_and_reported() -> None:
+    writer = run(
+        published("a", ArticleSource("المادة الأولى", "نص")), gold_set=FakeGold(gold("q1", "a:1"))
+    )
+    assert [q.query_id for q in writer.queries] == ["q1"]
+    assert writer.report is not None
+    assert (writer.report.gold_version, writer.report.queries) == ("v-test", 1)
+
+
+def test_gold_question_citing_a_missing_article_stops_the_build() -> None:
+    with pytest.raises(DataIntegrityError, match="q1 -> a:9"):
+        run(
+            published("a", ArticleSource("المادة الأولى", "نص")),
+            gold_set=FakeGold(gold("q1", "a:9")),
+        )
+
+
+def test_gold_questions_about_laws_not_built_are_left_out() -> None:
+    writer = run(
+        published("a", ArticleSource("المادة الأولى", "نص")),
+        published("b", ArticleSource("المادة الأولى", "نص")),
+        law_ids=["a"],
+        gold_set=FakeGold(gold("q1", "a:1"), gold("q2", "b:1")),
+    )
+    assert [q.query_id for q in writer.queries] == ["q1"]

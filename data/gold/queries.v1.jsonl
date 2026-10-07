@@ -1,0 +1,82 @@
+{"_id": "q001", "text": "ما المدة القصوى لفترة التجربة في عقد العمل؟", "relevant": {"labor-law:53": 2, "labor-law:54": 1}, "topic": "probation", "style": "formal"}
+{"_id": "q002", "text": "أقدر أحط الموظف تحت التجربة مرة ثانية بنفس الشركة؟", "relevant": {"labor-law:54": 2, "labor-law:53": 1}, "topic": "probation", "style": "dialect"}
+{"_id": "q003", "text": "هل يستحق الموظف مكافأة نهاية خدمة إذا انتهى عقده خلال فترة التجربة؟", "relevant": {"labor-law:54": 2}, "topic": "probation", "style": "paraphrase"}
+{"_id": "q004", "text": "ما مدة الإشعار المطلوبة من صاحب العمل لإنهاء العقد غير محدد المدة؟", "relevant": {"labor-law:75": 2, "labor-law:76": 1}, "topic": "termination", "style": "formal"}
+{"_id": "q005", "text": "لو بستقيل كم لازم أعطيهم إشعار قبل؟", "relevant": {"labor-law:75": 2, "labor-law:79-bis": 1}, "topic": "resignation", "style": "dialect"}
+{"_id": "q006", "text": "ما التعويض المستحق عند عدم الالتزام بمهلة الإشعار؟", "relevant": {"labor-law:76": 2, "labor-law:75": 1}, "topic": "termination", "style": "formal"}
+{"_id": "q007", "text": "ما مقدار التعويض عند إنهاء عقد العمل لسبب غير مشروع؟", "relevant": {"labor-law:77": 2}, "topic": "termination", "style": "formal"}
+{"_id": "q008", "text": "في أي حالات يجوز لصاحب العمل فسخ العقد دون مكافأة أو إشعار أو تعويض؟", "relevant": {"labor-law:80": 2}, "topic": "termination", "style": "formal"}
+{"_id": "q009", "text": "متى يحق للموظف يترك الشغل بدون إشعار ويحتفظ بكل حقوقه؟", "relevant": {"labor-law:81": 2}, "topic": "termination", "style": "dialect"}
+{"_id": "q010", "text": "كيف تحسب مكافأة نهاية الخدمة للموظف؟", "relevant": {"labor-law:84": 2, "labor-law:85": 1}, "topic": "end-of-service", "style": "paraphrase"}
+{"_id": "q011", "text": "لو استقلت بعد ثلاث سنين كم آخذ من مكافأة نهاية الخدمة؟", "relevant": {"labor-law:85": 2, "labor-law:84": 1}, "topic": "end-of-service", "style": "dialect"}
+{"_id": "q012", "text": "هل تستحق الموظفة مكافأة نهاية الخدمة كاملة إذا استقالت بعد زواجها؟", "relevant": {"labor-law:87": 2, "labor-law:85": 1}, "topic": "end-of-service", "style": "formal"}
+{"_id": "q013", "text": "متى تعتبر الاستقالة مقبولة إذا لم يرد عليها صاحب العمل؟", "relevant": {"labor-law:79-bis": 2}, "topic": "resignation", "style": "formal"}
+{"_id": "q014", "text": "الشركة تأخرت ترد على استقالتي، متى تصير مقبولة؟", "relevant": {"labor-law:79-bis": 2}, "topic": "resignation", "style": "dialect"}
+{"_id": "q015", "text": "خلال كم يوم يجب على صاحب العمل تسوية مستحقات العامل بعد انتهاء خدمته؟", "relevant": {"labor-law:88": 2}, "topic": "end-of-service", "style": "formal"}
+{"_id": "q016", "text": "ما الحد الأقصى لساعات العمل اليومية والأسبوعية؟", "relevant": {"labor-law:98": 2, "labor-law:101": 1}, "topic": "working-hours", "style": "formal"}
+{"_id": "q017", "text": "كم ساعة الدوام في رمضان؟", "relevant": {"labor-law:98": 2}, "topic": "working-hours", "style": "dialect"}
+{"_id": "q018", "text": "كيف يحسب أجر الأوفرتايم؟", "relevant": {"labor-law:107": 2}, "topic": "working-hours", "style": "paraphrase"}
+{"_id": "q019", "text": "كم مدة الإجازة السنوية للعامل؟", "relevant": {"labor-law:109": 2, "labor-law:110": 1}, "topic": "leave", "style": "formal"}
+{"_id": "q020", "text": "أقدر أأجل إجازتي السنوية للسنة الجاية؟", "relevant": {"labor-law:110": 2, "labor-law:109": 1}, "topic": "leave", "style": "dialect"}
+{"_id": "q021", "text": "هل يصرف بدل نقدي عن رصيد الإجازات عند ترك العمل؟", "relevant": {"labor-law:111": 2, "labor-law:109": 1}, "topic": "leave", "style": "paraphrase"}
+{"_id": "q022", "text": "كم يوم إجازة الزواج؟", "relevant": {"labor-law:113": 2}, "topic": "leave", "style": "dialect"}
+{"_id": "q023", "text": "كم مدة إجازة العامل عند وفاة أحد أقاربه؟", "relevant": {"labor-law:113": 2}, "topic": "leave", "style": "formal"}
+{"_id": "q024", "text": "كم يوم إجازة الحج ومتى أستحقها؟", "relevant": {"labor-law:114": 2}, "topic": "leave", "style": "dialect"}
+{"_id": "q025", "text": "هل يحق للعامل إجازة لأداء الامتحانات الدراسية؟", "relevant": {"labor-law:115": 2}, "topic": "leave", "style": "formal"}
+{"_id": "q026", "text": "كيف تحسب الإجازة المرضية وأجرها؟", "relevant": {"labor-law:117": 2, "labor-law:82": 1}, "topic": "leave", "style": "formal"}
+{"_id": "q027", "text": "هل يجوز إنهاء خدمة الموظف بسبب مرضه؟", "relevant": {"labor-law:82": 2, "labor-law:117": 1}, "topic": "termination", "style": "paraphrase"}
+{"_id": "q028", "text": "كم مدة إجازة الأمومة للموظفة؟", "relevant": {"labor-law:151": 2}, "topic": "women", "style": "paraphrase"}
+{"_id": "q029", "text": "ما فترات الرضاعة المستحقة للمرأة العاملة بعد إجازة الوضع؟", "relevant": {"labor-law:154": 2}, "topic": "women", "style": "formal"}
+{"_id": "q030", "text": "هل يقدرون يفصلون الموظفة وهي حامل؟", "relevant": {"labor-law:155": 2}, "topic": "women", "style": "dialect"}
+{"_id": "q031", "text": "ما مدة إجازة العدة للمرأة العاملة المتوفى عنها زوجها؟", "relevant": {"labor-law:160": 2}, "topic": "women", "style": "formal"}
+{"_id": "q032", "text": "ما الحد الأعلى لما يجوز حسمه من أجر العامل؟", "relevant": {"labor-law:93": 2, "labor-law:92": 1}, "topic": "wages", "style": "formal"}
+{"_id": "q033", "text": "يحق للشركة تخصم من راتبي بدون موافقتي؟", "relevant": {"labor-law:92": 2, "labor-law:93": 1}, "topic": "wages", "style": "dialect"}
+{"_id": "q034", "text": "هل يجوز نقل العامل إلى مدينة أخرى دون موافقته؟", "relevant": {"labor-law:58": 2}, "topic": "contract", "style": "formal"}
+{"_id": "q035", "text": "ما الجزاءات التأديبية التي يجوز لصاحب العمل توقيعها على العامل؟", "relevant": {"labor-law:66": 2}, "topic": "discipline", "style": "formal"}
+{"_id": "q036", "text": "بعد كم يوم من اكتشاف المخالفة لا يجوز محاسبة العامل عليها؟", "relevant": {"labor-law:69": 2}, "topic": "discipline", "style": "formal"}
+{"_id": "q037", "text": "هل شرط عدم المنافسة بعد ترك العمل نظامي وما أقصى مدة له؟", "relevant": {"labor-law:83": 2}, "topic": "contract", "style": "paraphrase"}
+{"_id": "q038", "text": "هل يجب أن يكون عقد العمل مكتوباً؟", "relevant": {"labor-law:51": 2, "labor-law:37": 1}, "topic": "contract", "style": "formal"}
+{"_id": "q039", "text": "ما مدة عقد العامل غير السعودي إذا لم تحدد في العقد؟", "relevant": {"labor-law:37": 2}, "topic": "foreign-workers", "style": "formal"}
+{"_id": "q040", "text": "مين يدفع رسوم الإقامة ورخصة العمل للعامل الأجنبي؟", "relevant": {"labor-law:40": 2}, "topic": "foreign-workers", "style": "dialect"}
+{"_id": "q041", "text": "هل يجوز تشغيل العامل الوافد في مهنة غير المدونة في رخصة عمله؟", "relevant": {"labor-law:38": 2}, "topic": "foreign-workers", "style": "formal"}
+{"_id": "q042", "text": "هل يلزم صاحب العمل بإعطاء العامل شهادة خبرة عند انتهاء العقد؟", "relevant": {"labor-law:64": 2}, "topic": "end-of-service", "style": "paraphrase"}
+{"_id": "q043", "text": "ما يوم الراحة الأسبوعية وهل يجوز تعويضه بمقابل نقدي؟", "relevant": {"labor-law:104": 2}, "topic": "working-hours", "style": "formal"}
+{"_id": "q044", "text": "ما الحد الأدنى لسن تشغيل الأحداث؟", "relevant": {"labor-law:162": 2, "labor-law:164": 1}, "topic": "minors", "style": "formal"}
+{"_id": "q045", "text": "ماذا يحدث لعقود الموظفين إذا تغير مالك الشركة؟", "relevant": {"labor-law:18": 2}, "topic": "contract", "style": "paraphrase"}
+{"_id": "q046", "text": "هل ينتهي عقد العمل بوفاة صاحب العمل؟", "relevant": {"labor-law:79": 2}, "topic": "termination", "style": "formal"}
+{"_id": "q047", "text": "هل يصح أن يتنازل الموظف عن حقوقه النظامية أثناء سريان العقد؟", "relevant": {"labor-law:8": 2}, "topic": "contract", "style": "paraphrase"}
+{"_id": "q048", "text": "ما التعويض المستحق عن إصابة العمل التي تسبب عجزاً دائماً؟", "relevant": {"labor-law:138": 2, "labor-law:137": 1}, "topic": "work-injury", "style": "formal"}
+{"_id": "q049", "text": "ما المعونة المالية للعامل المصاب بعجز مؤقت بسبب العمل؟", "relevant": {"labor-law:137": 2}, "topic": "work-injury", "style": "formal"}
+{"_id": "q050", "text": "متى يلزم صاحب العمل بتوفير حضانة لأطفال العاملات؟", "relevant": {"labor-law:159": 2}, "topic": "women", "style": "formal"}
+{"_id": "q051", "text": "ما المدة التي لا تقبل بعدها الدعوى العمالية؟", "relevant": {"labor-law:234": 2}, "topic": "disputes", "style": "formal"}
+{"_id": "q052", "text": "ما عقوبة مخالفة أحكام نظام العمل؟", "relevant": {"labor-law:229": 2}, "topic": "penalties", "style": "formal"}
+{"_id": "q053", "text": "متى يتحول العقد محدد المدة إلى عقد غير محدد المدة؟", "relevant": {"labor-law:55": 2}, "topic": "contract", "style": "formal"}
+{"_id": "q054", "text": "كم نسبة السعودة المطلوبة من المنشآت؟", "relevant": {"labor-law:26": 2}, "topic": "saudization", "style": "paraphrase"}
+{"_id": "q055", "text": "ما سن التقاعد في نظام العمل؟", "relevant": {"labor-law:74": 2}, "topic": "termination", "style": "formal"}
+{"_id": "q056", "text": "هل يجوز للشركة تنقل بيانات العملاء خارج المملكة؟", "relevant": {"pdpl:29": 2}, "topic": "data-transfer", "style": "dialect"}
+{"_id": "q057", "text": "ما حقوق صاحب البيانات الشخصية؟", "relevant": {"pdpl:4": 2}, "topic": "data-rights", "style": "formal"}
+{"_id": "q058", "text": "هل تجوز معالجة البيانات الشخصية دون موافقة صاحبها؟", "relevant": {"pdpl:5": 2, "pdpl:6": 2}, "topic": "consent", "style": "formal"}
+{"_id": "q059", "text": "ما التزامات الشركة عند حدوث تسرب للبيانات الشخصية؟", "relevant": {"pdpl:20": 2}, "topic": "breach", "style": "formal"}
+{"_id": "q060", "text": "متى يجب إتلاف البيانات الشخصية؟", "relevant": {"pdpl:18": 2}, "topic": "retention", "style": "formal"}
+{"_id": "q061", "text": "ماذا يجب أن تتضمن سياسة الخصوصية؟", "relevant": {"pdpl:12": 2}, "topic": "transparency", "style": "paraphrase"}
+{"_id": "q062", "text": "متى يجوز الإفصاح عن البيانات الشخصية لجهة أخرى؟", "relevant": {"pdpl:15": 2}, "topic": "disclosure", "style": "formal"}
+{"_id": "q063", "text": "نقدر نرسل رسائل دعائية لإيميلات العملاء؟", "relevant": {"pdpl:25": 2, "pdpl:26": 1}, "topic": "marketing", "style": "dialect"}
+{"_id": "q064", "text": "ما عقوبة إفشاء البيانات الحساسة؟", "relevant": {"pdpl:35": 2}, "topic": "penalties", "style": "formal"}
+{"_id": "q065", "text": "هل يلزم تقييم أثر معالجة البيانات الشخصية قبل إطلاق خدمة جديدة؟", "relevant": {"pdpl:22": 2}, "topic": "dpia", "style": "paraphrase"}
+{"_id": "q066", "text": "يجوز نصور الهوية الوطنية للعميل؟", "relevant": {"pdpl:28": 2}, "topic": "identity-documents", "style": "dialect"}
+{"_id": "q067", "text": "ما التزامات جهة التحكم عند اختيار جهة لمعالجة البيانات نيابة عنها؟", "relevant": {"pdpl:8": 2}, "topic": "processors", "style": "formal"}
+{"_id": "q068", "text": "هل يلتزم الموظف بسرية البيانات الشخصية بعد انتهاء عمله؟", "relevant": {"pdpl:41": 2}, "topic": "confidentiality", "style": "formal"}
+{"_id": "q069", "text": "هل يجوز استخدام بيانات العملاء لأغراض التسويق؟", "relevant": {"pdpl:26": 2, "pdpl:25": 1}, "topic": "marketing", "style": "paraphrase"}
+{"_id": "q070", "text": "ما أشكال الشركات التي يجيزها نظام الشركات؟", "relevant": {"companies-law:4": 2}, "topic": "company-forms", "style": "formal"}
+{"_id": "q071", "text": "أقدر أأسس شركة ذات مسؤولية محدودة لحالي؟", "relevant": {"companies-law:157": 2}, "topic": "llc", "style": "dialect"}
+{"_id": "q072", "text": "ماذا يجب إذا بلغت خسائر الشركة ذات المسؤولية المحدودة نصف رأس مالها؟", "relevant": {"companies-law:182": 2}, "topic": "llc", "style": "formal"}
+{"_id": "q073", "text": "ما الإجراء الواجب إذا بلغت خسائر شركة المساهمة نصف رأس المال المصدر؟", "relevant": {"companies-law:132": 2}, "topic": "joint-stock", "style": "formal"}
+{"_id": "q074", "text": "ما النصاب اللازم لصحة اجتماع الجمعية العامة العادية؟", "relevant": {"companies-law:92": 2}, "topic": "joint-stock", "style": "formal"}
+{"_id": "q075", "text": "هل يجوز لعضو مجلس الإدارة أن ينافس الشركة؟", "relevant": {"companies-law:27": 2}, "topic": "governance", "style": "formal"}
+{"_id": "q076", "text": "كيف تحدد مكافأة أعضاء مجلس الإدارة؟", "relevant": {"companies-law:76": 2}, "topic": "governance", "style": "formal"}
+{"_id": "q077", "text": "كيف نعزل مدير الشركة ذات المسؤولية المحدودة؟", "relevant": {"companies-law:164": 2}, "topic": "llc", "style": "dialect"}
+{"_id": "q078", "text": "هل يجوز وضع ميثاق ينظم ملكية العائلة وإدارتها في الشركة؟", "relevant": {"companies-law:11": 2}, "topic": "family-business", "style": "paraphrase"}
+{"_id": "q079", "text": "كيف يتم اندماج الشركات؟", "relevant": {"companies-law:225": 2}, "topic": "restructuring", "style": "formal"}
+{"_id": "q080", "text": "متى تدخل الشركة دور التصفية؟", "relevant": {"companies-law:244": 2, "companies-law:243": 1}, "topic": "liquidation", "style": "formal"}
+{"_id": "q081", "text": "ما عقوبة تسجيل بيانات كاذبة في القوائم المالية للشركة؟", "relevant": {"companies-law:260": 2}, "topic": "penalties", "style": "formal"}
+{"_id": "q082", "text": "هل يجوز توزيع أرباح مرحلية على الشركاء أو المساهمين؟", "relevant": {"companies-law:22": 2}, "topic": "profits", "style": "formal"}

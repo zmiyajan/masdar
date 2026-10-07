@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from masdar.domain.amendments import AmendmentKind, ArticleStatus
+from masdar.domain.gold import GoldQuery, QueryStyle
 from masdar.domain.models import CURRENT_STATUSES, Article
 
 DATASET_NAME = "Saudi Regulations Arabic Retrieval Benchmark"
@@ -58,6 +59,13 @@ class DatasetReport:
     laws: tuple[LawSummary, ...]
     name: str = DATASET_NAME
     version: str = DATASET_VERSION
+    gold_version: str | None = None
+    query_styles: tuple[tuple[QueryStyle, int], ...] = ()
+
+    @property
+    def queries(self) -> int:
+        """Number of gold questions in the dataset."""
+        return sum(count for _, count in self.query_styles)
 
     def total(self, status: ArticleStatus | None = None) -> int:
         """Articles across all laws, optionally only those with ``status``."""
@@ -91,3 +99,9 @@ def count_outdated_on_portal(articles: Sequence[Article]) -> int:
         and article.original_text is not None
         and article.text != article.original_text
     )
+
+
+def count_query_styles(queries: Sequence[GoldQuery]) -> tuple[tuple[QueryStyle, int], ...]:
+    """Gold questions per wording style, every style listed."""
+    counts = Counter(query.style for query in queries)
+    return tuple((style, counts.get(style, 0)) for style in QueryStyle)

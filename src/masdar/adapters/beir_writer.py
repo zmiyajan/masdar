@@ -16,6 +16,7 @@ from typing import Any
 from masdar.adapters.files import write_atomically
 from masdar.domain.amendments import Amendment, AmendmentKind, ArticleStatus
 from masdar.domain.dataset import DatasetReport, LawSummary
+from masdar.domain.gold import GoldQuery, QueryStyle
 from masdar.domain.models import Article
 
 _STATUS_MEANING = {
@@ -40,8 +41,13 @@ class BeirDatasetWriter:
         """Create a writer that writes into ``out_dir``."""
         self._out_dir = out_dir
 
-    def write(self, articles: Sequence[Article], report: DatasetReport) -> None:
-        """Write current articles, historical articles, statistics and the card."""
+    def write(
+        self,
+        articles: Sequence[Article],
+        report: DatasetReport,
+        queries: Sequence[GoldQuery] = (),
+    ) -> None:
+        """Write articles, gold queries with judgments, statistics and the card."""
         self._out_dir.mkdir(parents=True, exist_ok=True)
         urls = {law.law_id: law.source_url for law in report.laws}
         current = [a for a in articles if a.is_current]
@@ -51,6 +57,10 @@ class BeirDatasetWriter:
             "history.jsonl",
             [to_beir_document(a, urls[a.law_id], doc_id=history_id(a)) for a in history],
         )
+        if queries:
+            self._write_jsonl("queries.jsonl", [to_beir_query(q) for q in queries])
+            (self._out_dir / "qrels").mkdir(exist_ok=True)
+            write_atomically(self._out_dir / "qrels" / "test.tsv", to_qrels_tsv(queries).encode())
         stats = json.dumps(to_stats(report), ensure_ascii=False, indent=2) + "\n"
         write_atomically(self._out_dir / "stats.json", stats.encode())
         write_atomically(self._out_dir / "DATASET_CARD.md", render_dataset_card(report).encode())
@@ -93,6 +103,26 @@ def to_beir_document(
     }
 
 
+def to_beir_query(query: GoldQuery) -> dict[str, Any]:
+    """One BEIR query record."""
+    return {
+        "_id": query.query_id,
+        "text": query.text,
+        "metadata": {"topic": query.topic, "style": query.style.value},
+    }
+
+
+def to_qrels_tsv(queries: Sequence[GoldQuery]) -> str:
+    """BEIR relevance judgments: ``query-id``, ``corpus-id``, graded ``score``."""
+    rows = ["query-id\tcorpus-id\tscore"]
+    rows += [
+        f"{query.query_id}\t{article_id}\t{grade}"
+        for query in queries
+        for article_id, grade in query.relevant
+    ]
+    return "\n".join(rows) + "\n"
+
+
 def _amendment_record(amendment: Amendment) -> dict[str, str | None]:
     return {
         "kind": amendment.kind.value,
@@ -108,6 +138,8 @@ def to_stats(report: DatasetReport) -> dict[str, Any]:
     return {
         "name": report.name,
         "version": report.version,
+        "gold_version": report.gold_version,
+        "queries": {style.value: count for style, count in report.query_styles},
         "laws": [
             {
                 "law_id": law.law_id,
@@ -161,6 +193,7 @@ def render_dataset_card(report: DatasetReport) -> str:
             "",
             *_kind_table(report),
             "",
+            *_queries_section(report),
             "## Article status",
             "",
             "| Status | Meaning |",
@@ -206,8 +239,8 @@ def render_dataset_card(report: DatasetReport) -> str:
             "- `review_needed` articles show the last certain wording, not the current one.",
             "- Amendment notes are classified by rules over free text; an unrecognized note "
             "is always treated as partial (never applied), which is the safe failure mode.",
-            "- Queries and relevance judgments (`queries.jsonl`, `qrels/`) are being added "
-            "in the next release.",
+            "- The gold questions have one annotator (drafted with AI assistance, each mapping "
+            "verified against the article text). Review by a labor-law practitioner is welcome.",
             "",
             "## License and use",
             "",
@@ -217,6 +250,25 @@ def render_dataset_card(report: DatasetReport) -> str:
             "",
         ]
     )
+
+
+def _queries_section(report: DatasetReport) -> list[str]:
+    if not report.queries:
+        return []
+    styles = ", ".join(f"{count} {style.value}" for style, count in report.query_styles)
+    return [
+        f"## Queries and relevance judgments (gold set {report.gold_version})",
+        "",
+        f"`queries.jsonl` holds {report.queries} questions an HR, legal or compliance "
+        f"professional would ask ({styles}); `qrels/test.tsv` grades each answering article "
+        "`2` and each related article `1`.",
+        "",
+        f"- `{QueryStyle.FORMAL.value}`: Modern Standard Arabic close to legal wording.",
+        f"- `{QueryStyle.DIALECT.value}`: Saudi dialect, as people actually type.",
+        f"- `{QueryStyle.PARAPHRASE.value}`: everyday terms the law itself does not use "
+        "(e.g. الأوفرتايم, إجازة الأمومة), a direct test of vocabulary mismatch.",
+        "",
+    ]
 
 
 def _source_line(law: LawSummary) -> str:

@@ -3,6 +3,17 @@ name = "masdar"
 version = "0.1.0"
 description = "Arabic-first retrieval engine for Saudi regulations, with measurable search quality."
 readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["arabic", "rag", "retrieval", "information-retrieval", "saudi-arabia", "legal", "bm25", "beir"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: Arabic",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
 authors = [
     { name = "Ziyad Miyajan", email = "zmiyajan@users.noreply.github.com" }
 ]
@@ -11,13 +22,23 @@ requires-python = ">=3.12"
 # phase that needs it, and heavy ML packages will live behind optional extras.
 dependencies = [
     "beautifulsoup4>=4.13",
+    "fastapi>=0.115",
     "httpx>=0.28",
+    "mcp>=1.2",
     "pydantic-settings>=2.6",
+    "rank-bm25>=0.2.2",
     "truststore>=0.10",
+    "uvicorn[standard]>=0.32",
 ]
 
 [project.scripts]
 masdar = "masdar.entrypoints.cli:main"
+masdar-mcp = "masdar.entrypoints.mcp_server:main"
+
+[project.optional-dependencies]
+ml = [
+    "sentence-transformers>=3.3",
+]
 
 [dependency-groups]
 dev = [
@@ -79,6 +100,11 @@ python_version = "3.12"
 strict = true
 warn_unreachable = true
 files = ["src", "tests"]
+
+# Untyped third-party packages; per AGENTS.md they may only be imported in adapters/.
+[[tool.mypy.overrides]]
+module = ["rank_bm25", "rank_bm25.*"]
+ignore_missing_imports = true
 
 # -------------------------------------------------------------------------- pytest
 [tool.pytest.ini_options]

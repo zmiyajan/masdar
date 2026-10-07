@@ -10,11 +10,14 @@ from masdar.domain.dataset import (
     LawSummary,
     count_amendment_kinds,
     count_outdated_on_portal,
+    count_query_styles,
     count_statuses,
 )
 from masdar.domain.errors import DataIntegrityError
+from masdar.domain.gold import GoldQuery, unresolved_references
 from masdar.domain.models import Article
 from masdar.ports.dataset_writer import DatasetWriter
+from masdar.ports.gold_source import GoldSource
 from masdar.ports.law_source import LawSource
 
 
@@ -27,12 +30,14 @@ class BuildDataset:
         writer: DatasetWriter,
         normalizer: ArabicNormalizer,
         chunking: ChunkingOptions,
+        gold: GoldSource | None = None,
     ) -> None:
         """Wire the use case to its collaborators (see `masdar.container`)."""
         self._source = source
         self._writer = writer
         self._normalizer = normalizer
         self._chunking = chunking
+        self._gold = gold
 
     def run(self, law_ids: Sequence[str] | None = None) -> DatasetReport:
         """Build and write the dataset.
@@ -45,7 +50,8 @@ class BuildDataset:
 
         Raises:
             DataIntegrityError: If two current articles of a law share a number,
-                which would make citations ambiguous.
+                which would make citations ambiguous, or a gold question cites an
+                article that is not current law.
         """
         corpus: list[Article] = []
         summaries: list[LawSummary] = []
@@ -69,9 +75,30 @@ class BuildDataset:
             )
             corpus += articles
 
-        report = DatasetReport(tuple(summaries))
-        self._writer.write(corpus, report)
+        queries = self._gold_queries(corpus, {summary.law_id for summary in summaries})
+        report = DatasetReport(
+            tuple(summaries),
+            gold_version=self._gold.version if self._gold else None,
+            query_styles=count_query_styles(queries),
+        )
+        self._writer.write(corpus, report, queries)
         return report
+
+    def _gold_queries(self, corpus: Sequence[Article], laws: set[str]) -> tuple[GoldQuery, ...]:
+        """Gold questions about the built laws, checked against the corpus."""
+        if self._gold is None:
+            return ()
+        queries = tuple(
+            query
+            for query in self._gold.load()
+            if all(article_id.split(":", 1)[0] in laws for article_id, _ in query.relevant)
+        )
+        problems = unresolved_references(queries, corpus)
+        if problems:
+            raise DataIntegrityError(
+                "Gold questions cite articles that are not current: " + ", ".join(problems)
+            )
+        return queries
 
 
 def _check_integrity(law_id: str, articles: Sequence[Article]) -> None:

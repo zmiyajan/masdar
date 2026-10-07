@@ -32,6 +32,14 @@ A note attached to several articles (e.g. a consolidation) is counted once per a
 | `pdpl` | 12 | 0 | 1 | 0 | 0 | 11 |
 | `companies-law` | 0 | 0 | 0 | 0 | 0 | 0 |
 
+## Queries and relevance judgments (gold set v1)
+
+`queries.jsonl` holds 82 questions an HR, legal or compliance professional would ask (50 formal, 17 dialect, 15 paraphrase); `qrels/test.tsv` grades each answering article `2` and each related article `1`.
+
+- `formal`: Modern Standard Arabic close to legal wording.
+- `dialect`: Saudi dialect, as people actually type.
+- `paraphrase`: everyday terms the law itself does not use (e.g. الأوفرتايم, إجازة الأمومة), a direct test of vocabulary mismatch.
+
 ## Article status
 
 | Status | Meaning |
@@ -76,7 +84,7 @@ A note attached to several articles (e.g. a consolidation) is counted once per a
 - **Not an official consolidation and not legal advice.** Verify against the official source before relying on any article.
 - `review_needed` articles show the last certain wording, not the current one.
 - Amendment notes are classified by rules over free text; an unrecognized note is always treated as partial (never applied), which is the safe failure mode.
-- Queries and relevance judgments (`queries.jsonl`, `qrels/`) are being added in the next release.
+- The gold questions have one annotator (drafted with AI assistance, each mapping verified against the article text). Review by a labor-law practitioner is welcome.
 
 ## License and use
 

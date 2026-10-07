@@ -1,6 +1,12 @@
 {
   "name": "Saudi Regulations Arabic Retrieval Benchmark",
   "version": "1.0.0",
+  "gold_version": "v1",
+  "queries": {
+    "formal": 50,
+    "dialect": 17,
+    "paraphrase": 15
+  },
   "laws": [
     {
       "law_id": "labor-law",

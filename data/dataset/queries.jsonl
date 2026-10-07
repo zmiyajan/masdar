@@ -1,0 +1,82 @@
+{"_id": "q001", "text": "ما المدة القصوى لفترة التجربة في عقد العمل؟", "metadata": {"topic": "probation", "style": "formal"}}
+{"_id": "q002", "text": "أقدر أحط الموظف تحت التجربة مرة ثانية بنفس الشركة؟", "metadata": {"topic": "probation", "style": "dialect"}}
+{"_id": "q003", "text": "هل يستحق الموظف مكافأة نهاية خدمة إذا انتهى عقده خلال فترة التجربة؟", "metadata": {"topic": "probation", "style": "paraphrase"}}
+{"_id": "q004", "text": "ما مدة الإشعار المطلوبة من صاحب العمل لإنهاء العقد غير محدد المدة؟", "metadata": {"topic": "termination", "style": "formal"}}
+{"_id": "q005", "text": "لو بستقيل كم لازم أعطيهم إشعار قبل؟", "metadata": {"topic": "resignation", "style": "dialect"}}
+{"_id": "q006", "text": "ما التعويض المستحق عند عدم الالتزام بمهلة الإشعار؟", "metadata": {"topic": "termination", "style": "formal"}}
+{"_id": "q007", "text": "ما مقدار التعويض عند إنهاء عقد العمل لسبب غير مشروع؟", "metadata": {"topic": "termination", "style": "formal"}}
+{"_id": "q008", "text": "في أي حالات يجوز لصاحب العمل فسخ العقد دون مكافأة أو إشعار أو تعويض؟", "metadata": {"topic": "termination", "style": "formal"}}
+{"_id": "q009", "text": "متى يحق للموظف يترك الشغل بدون إشعار ويحتفظ بكل حقوقه؟", "metadata": {"topic": "termination", "style": "dialect"}}
+{"_id": "q010", "text": "كيف تحسب مكافأة نهاية الخدمة للموظف؟", "metadata": {"topic": "end-of-service", "style": "paraphrase"}}
+{"_id": "q011", "text": "لو استقلت بعد ثلاث سنين كم آخذ من مكافأة نهاية الخدمة؟", "metadata": {"topic": "end-of-service", "style": "dialect"}}
+{"_id": "q012", "text": "هل تستحق الموظفة مكافأة نهاية الخدمة كاملة إذا استقالت بعد زواجها؟", "metadata": {"topic": "end-of-service", "style": "formal"}}
+{"_id": "q013", "text": "متى تعتبر الاستقالة مقبولة إذا لم يرد عليها صاحب العمل؟", "metadata": {"topic": "resignation", "style": "formal"}}
+{"_id": "q014", "text": "الشركة تأخرت ترد على استقالتي، متى تصير مقبولة؟", "metadata": {"topic": "resignation", "style": "dialect"}}
+{"_id": "q015", "text": "خلال كم يوم يجب على صاحب العمل تسوية مستحقات العامل بعد انتهاء خدمته؟", "metadata": {"topic": "end-of-service", "style": "formal"}}
+{"_id": "q016", "text": "ما الحد الأقصى لساعات العمل اليومية والأسبوعية؟", "metadata": {"topic": "working-hours", "style": "formal"}}
+{"_id": "q017", "text": "كم ساعة الدوام في رمضان؟", "metadata": {"topic": "working-hours", "style": "dialect"}}
+{"_id": "q018", "text": "كيف يحسب أجر الأوفرتايم؟", "metadata": {"topic": "working-hours", "style": "paraphrase"}}
+{"_id": "q019", "text": "كم مدة الإجازة السنوية للعامل؟", "metadata": {"topic": "leave", "style": "formal"}}
+{"_id": "q020", "text": "أقدر أأجل إجازتي السنوية للسنة الجاية؟", "metadata": {"topic": "leave", "style": "dialect"}}
+{"_id": "q021", "text": "هل يصرف بدل نقدي عن رصيد الإجازات عند ترك العمل؟", "metadata": {"topic": "leave", "style": "paraphrase"}}
+{"_id": "q022", "text": "كم يوم إجازة الزواج؟", "metadata": {"topic": "leave", "style": "dialect"}}
+{"_id": "q023", "text": "كم مدة إجازة العامل عند وفاة أحد أقاربه؟", "metadata": {"topic": "leave", "style": "formal"}}
+{"_id": "q024", "text": "كم يوم إجازة الحج ومتى أستحقها؟", "metadata": {"topic": "leave", "style": "dialect"}}
+{"_id": "q025", "text": "هل يحق للعامل إجازة لأداء الامتحانات الدراسية؟", "metadata": {"topic": "leave", "style": "formal"}}
+{"_id": "q026", "text": "كيف تحسب الإجازة المرضية وأجرها؟", "metadata": {"topic": "leave", "style": "formal"}}
+{"_id": "q027", "text": "هل يجوز إنهاء خدمة الموظف بسبب مرضه؟", "metadata": {"topic": "termination", "style": "paraphrase"}}
+{"_id": "q028", "text": "كم مدة إجازة الأمومة للموظفة؟", "metadata": {"topic": "women", "style": "paraphrase"}}
+{"_id": "q029", "text": "ما فترات الرضاعة المستحقة للمرأة العاملة بعد إجازة الوضع؟", "metadata": {"topic": "women", "style": "formal"}}
+{"_id": "q030", "text": "هل يقدرون يفصلون الموظفة وهي حامل؟", "metadata": {"topic": "women", "style": "dialect"}}
+{"_id": "q031", "text": "ما مدة إجازة العدة للمرأة العاملة المتوفى عنها زوجها؟", "metadata": {"topic": "women", "style": "formal"}}
+{"_id": "q032", "text": "ما الحد الأعلى لما يجوز حسمه من أجر العامل؟", "metadata": {"topic": "wages", "style": "formal"}}
+{"_id": "q033", "text": "يحق للشركة تخصم من راتبي بدون موافقتي؟", "metadata": {"topic": "wages", "style": "dialect"}}
+{"_id": "q034", "text": "هل يجوز نقل العامل إلى مدينة أخرى دون موافقته؟", "metadata": {"topic": "contract", "style": "formal"}}
+{"_id": "q035", "text": "ما الجزاءات التأديبية التي يجوز لصاحب العمل توقيعها على العامل؟", "metadata": {"topic": "discipline", "style": "formal"}}
+{"_id": "q036", "text": "بعد كم يوم من اكتشاف المخالفة لا يجوز محاسبة العامل عليها؟", "metadata": {"topic": "discipline", "style": "formal"}}
+{"_id": "q037", "text": "هل شرط عدم المنافسة بعد ترك العمل نظامي وما أقصى مدة له؟", "metadata": {"topic": "contract", "style": "paraphrase"}}
+{"_id": "q038", "text": "هل يجب أن يكون عقد العمل مكتوباً؟", "metadata": {"topic": "contract", "style": "formal"}}
+{"_id": "q039", "text": "ما مدة عقد العامل غير السعودي إذا لم تحدد في العقد؟", "metadata": {"topic": "foreign-workers", "style": "formal"}}
+{"_id": "q040", "text": "مين يدفع رسوم الإقامة ورخصة العمل للعامل الأجنبي؟", "metadata": {"topic": "foreign-workers", "style": "dialect"}}
+{"_id": "q041", "text": "هل يجوز تشغيل العامل الوافد في مهنة غير المدونة في رخصة عمله؟", "metadata": {"topic": "foreign-workers", "style": "formal"}}
+{"_id": "q042", "text": "هل يلزم صاحب العمل بإعطاء العامل شهادة خبرة عند انتهاء العقد؟", "metadata": {"topic": "end-of-service", "style": "paraphrase"}}
+{"_id": "q043", "text": "ما يوم الراحة الأسبوعية وهل يجوز تعويضه بمقابل نقدي؟", "metadata": {"topic": "working-hours", "style": "formal"}}
+{"_id": "q044", "text": "ما الحد الأدنى لسن تشغيل الأحداث؟", "metadata": {"topic": "minors", "style": "formal"}}
+{"_id": "q045", "text": "ماذا يحدث لعقود الموظفين إذا تغير مالك الشركة؟", "metadata": {"topic": "contract", "style": "paraphrase"}}
+{"_id": "q046", "text": "هل ينتهي عقد العمل بوفاة صاحب العمل؟", "metadata": {"topic": "termination", "style": "formal"}}
+{"_id": "q047", "text": "هل يصح أن يتنازل الموظف عن حقوقه النظامية أثناء سريان العقد؟", "metadata": {"topic": "contract", "style": "paraphrase"}}
+{"_id": "q048", "text": "ما التعويض المستحق عن إصابة العمل التي تسبب عجزاً دائماً؟", "metadata": {"topic": "work-injury", "style": "formal"}}
+{"_id": "q049", "text": "ما المعونة المالية للعامل المصاب بعجز مؤقت بسبب العمل؟", "metadata": {"topic": "work-injury", "style": "formal"}}
+{"_id": "q050", "text": "متى يلزم صاحب العمل بتوفير حضانة لأطفال العاملات؟", "metadata": {"topic": "women", "style": "formal"}}
+{"_id": "q051", "text": "ما المدة التي لا تقبل بعدها الدعوى العمالية؟", "metadata": {"topic": "disputes", "style": "formal"}}
+{"_id": "q052", "text": "ما عقوبة مخالفة أحكام نظام العمل؟", "metadata": {"topic": "penalties", "style": "formal"}}
+{"_id": "q053", "text": "متى يتحول العقد محدد المدة إلى عقد غير محدد المدة؟", "metadata": {"topic": "contract", "style": "formal"}}
+{"_id": "q054", "text": "كم نسبة السعودة المطلوبة من المنشآت؟", "metadata": {"topic": "saudization", "style": "paraphrase"}}
+{"_id": "q055", "text": "ما سن التقاعد في نظام العمل؟", "metadata": {"topic": "termination", "style": "formal"}}
+{"_id": "q056", "text": "هل يجوز للشركة تنقل بيانات العملاء خارج المملكة؟", "metadata": {"topic": "data-transfer", "style": "dialect"}}
+{"_id": "q057", "text": "ما حقوق صاحب البيانات الشخصية؟", "metadata": {"topic": "data-rights", "style": "formal"}}
+{"_id": "q058", "text": "هل تجوز معالجة البيانات الشخصية دون موافقة صاحبها؟", "metadata": {"topic": "consent", "style": "formal"}}
+{"_id": "q059", "text": "ما التزامات الشركة عند حدوث تسرب للبيانات الشخصية؟", "metadata": {"topic": "breach", "style": "formal"}}
+{"_id": "q060", "text": "متى يجب إتلاف البيانات الشخصية؟", "metadata": {"topic": "retention", "style": "formal"}}
+{"_id": "q061", "text": "ماذا يجب أن تتضمن سياسة الخصوصية؟", "metadata": {"topic": "transparency", "style": "paraphrase"}}
+{"_id": "q062", "text": "متى يجوز الإفصاح عن البيانات الشخصية لجهة أخرى؟", "metadata": {"topic": "disclosure", "style": "formal"}}
+{"_id": "q063", "text": "نقدر نرسل رسائل دعائية لإيميلات العملاء؟", "metadata": {"topic": "marketing", "style": "dialect"}}
+{"_id": "q064", "text": "ما عقوبة إفشاء البيانات الحساسة؟", "metadata": {"topic": "penalties", "style": "formal"}}
+{"_id": "q065", "text": "هل يلزم تقييم أثر معالجة البيانات الشخصية قبل إطلاق خدمة جديدة؟", "metadata": {"topic": "dpia", "style": "paraphrase"}}
+{"_id": "q066", "text": "يجوز نصور الهوية الوطنية للعميل؟", "metadata": {"topic": "identity-documents", "style": "dialect"}}
+{"_id": "q067", "text": "ما التزامات جهة التحكم عند اختيار جهة لمعالجة البيانات نيابة عنها؟", "metadata": {"topic": "processors", "style": "formal"}}
+{"_id": "q068", "text": "هل يلتزم الموظف بسرية البيانات الشخصية بعد انتهاء عمله؟", "metadata": {"topic": "confidentiality", "style": "formal"}}
+{"_id": "q069", "text": "هل يجوز استخدام بيانات العملاء لأغراض التسويق؟", "metadata": {"topic": "marketing", "style": "paraphrase"}}
+{"_id": "q070", "text": "ما أشكال الشركات التي يجيزها نظام الشركات؟", "metadata": {"topic": "company-forms", "style": "formal"}}
+{"_id": "q071", "text": "أقدر أأسس شركة ذات مسؤولية محدودة لحالي؟", "metadata": {"topic": "llc", "style": "dialect"}}
+{"_id": "q072", "text": "ماذا يجب إذا بلغت خسائر الشركة ذات المسؤولية المحدودة نصف رأس مالها؟", "metadata": {"topic": "llc", "style": "formal"}}
+{"_id": "q073", "text": "ما الإجراء الواجب إذا بلغت خسائر شركة المساهمة نصف رأس المال المصدر؟", "metadata": {"topic": "joint-stock", "style": "formal"}}
+{"_id": "q074", "text": "ما النصاب اللازم لصحة اجتماع الجمعية العامة العادية؟", "metadata": {"topic": "joint-stock", "style": "formal"}}
+{"_id": "q075", "text": "هل يجوز لعضو مجلس الإدارة أن ينافس الشركة؟", "metadata": {"topic": "governance", "style": "formal"}}
+{"_id": "q076", "text": "كيف تحدد مكافأة أعضاء مجلس الإدارة؟", "metadata": {"topic": "governance", "style": "formal"}}
+{"_id": "q077", "text": "كيف نعزل مدير الشركة ذات المسؤولية المحدودة؟", "metadata": {"topic": "llc", "style": "dialect"}}
+{"_id": "q078", "text": "هل يجوز وضع ميثاق ينظم ملكية العائلة وإدارتها في الشركة؟", "metadata": {"topic": "family-business", "style": "paraphrase"}}
+{"_id": "q079", "text": "كيف يتم اندماج الشركات؟", "metadata": {"topic": "restructuring", "style": "formal"}}
+{"_id": "q080", "text": "متى تدخل الشركة دور التصفية؟", "metadata": {"topic": "liquidation", "style": "formal"}}
+{"_id": "q081", "text": "ما عقوبة تسجيل بيانات كاذبة في القوائم المالية للشركة؟", "metadata": {"topic": "penalties", "style": "formal"}}
+{"_id": "q082", "text": "هل يجوز توزيع أرباح مرحلية على الشركاء أو المساهمين؟", "metadata": {"topic": "profits", "style": "formal"}}
