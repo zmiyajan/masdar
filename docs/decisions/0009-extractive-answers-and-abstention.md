@@ -143,7 +143,8 @@ trademarks), general knowledge, and **near-misses** that sound like Labor Law, P
 Companies Law but are not covered (remote work, housing allowance amount, annual travel
 ticket, civil-service maternity leave, CCTV retention, sole-proprietorship registration, zakat
 on shares). Each was checked twice: keywords against the corpus text (for example the Labor
-Law mentions social insurance only to say deductions are allowed, never the rate), and by
+Law refers to the social insurance law only for wage deductions and occupational hazards,
+never the contribution rate), and by
 reading the top sentence the service picks for every question with no threshold. None of
 those sentences answers its question. The one out-of-scope question still answered at -0.75
 is "annual leave for a government employee under the Civil Service Law", which quotes the
