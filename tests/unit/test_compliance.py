@@ -181,6 +181,24 @@ def test_clause_query_fits_the_search_limit() -> None:
             {"loan-deduction-max": (R, ReviewReason.POSSIBLE_EXCEPTION)},
         ),
         ("يتقاضى الموظف بدل سكن 25% من الراتب الأساسي.", {}),
+        # a violation needs the number to read as the amount the rule is about
+        (
+            "تحتسب الإجازة السنوية بواقع 1.75 يوم.",
+            {"annual-leave-min": (R, ReviewReason.UNCLEAR_ROLE)},
+        ),
+        ("يستحق الموظف 15 يوماً إجازة سنوية.", {"annual-leave-min": (V, None)}),
+        ("إجازة سنوية مدفوعة الأجر مدتها 15 يوماً.", {"annual-leave-min": (V, None)}),
+        ("يجوز ترحيل 10 أيام من الإجازة السنوية.", {}),
+        ("لا يقل الجزء الأول من الإجازة السنوية عن 10 أيام.", {}),
+        ("يقدم التقرير خلال 3 أيام من الإجازة المرضية بأجر كامل.", {}),
+        (
+            "ساعات العمل في حالات الضرورة 10 ساعات يومياً.",
+            {"daily-hours-max": (R, ReviewReason.POSSIBLE_EXCEPTION)},
+        ),
+        (
+            "العقد غير محدد المدة ويجوز لأي من الطرفين إنهاؤه خلال فترة التجربة بإشعار 3 أيام.",
+            {"notice-employer-min": (R, ReviewReason.POSSIBLE_EXCEPTION)},
+        ),
         ("", {}),
     ],
 )
@@ -190,7 +208,7 @@ def test_rules(text: str, expected: dict[str, tuple[FindingKind, ReviewReason | 
 
 
 def test_message_cites_the_article_and_the_numbers() -> None:
-    [finding] = check_clause("فترة التجربة في البند 200 يوم", [PROBATION_MAX])
+    [finding] = check_clause("فترة التجربة مدتها 200 يوم", [PROBATION_MAX])
     assert finding.kind is V
     assert finding.message == (
         "فترة التجربة في البند 200 يوم، والحد الأعلى في نظام العمل "

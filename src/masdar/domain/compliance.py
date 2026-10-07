@@ -63,6 +63,7 @@ class ReviewReason(StrEnum):
     OPEN_TOTAL = "open_total"
     CONDITION_NOT_STATED = "condition_not_stated"
     POSSIBLE_EXCEPTION = "possible_exception"
+    UNCLEAR_ROLE = "unclear_role"
     ARTICLE_UNDER_REVIEW = "article_under_review"
 
 
@@ -74,6 +75,9 @@ _REASON_TEXT = {
     ReviewReason.OPEN_TOTAL: "يسمح البند بالتمديد دون أن يحدد المجموع",
     ReviewReason.CONDITION_NOT_STATED: "لا يذكر البند الشرط الذي يتوقف عليه تطبيق الحد",
     ReviewReason.POSSIBLE_EXCEPTION: "قد ينطبق استثناء نص عليه النظام",
+    ReviewReason.UNCLEAR_ROLE: (
+        "لا تدل صياغة البند بوضوح على أن هذا الرقم هو المقدار الذي يحدده النظام"
+    ),
     ReviewReason.ARTICLE_UNDER_REVIEW: (
         "نص المادة النافذ قيد المراجعة لأن تعديلاً جزئياً عليها لم يُطبق آلياً"
     ),
@@ -106,6 +110,19 @@ _EXTENSION_PHRASES = ("تمديد", "تمديدها", "التمديد", "يمد�
 _SAME_LENGTH_PHRASES = ("مماثلة", "مماثله")
 # Commas and sentence ends, but not the point in "7.5".
 _PHRASE_BREAK = re.compile(r"[،,;؛\n]|\.(?!\d)")
+# Words that may stand between a cue and the amount it states (folded forms):
+# "مدتها", "لمدة", "بأجر كامل", "قبل", "لا تقل عن", and the parties.
+_LINK_LINES = (
+    "مدتها مدته مدة لمدة بمدة قدرها قدره تبلغ يبلغ تكون يكون هي هو",
+    "مدفوعة الأجر بأجر بالأجر أجر كامل كاملاً كاملة براتب الراتب بالكامل",
+    "قبل كتابي كتابياً كتابة خطي خطياً لا تقل يقل عن تزيد يزيد على",
+    "من ما نسبته نسبة بنسبة راتب راتبه الشهري الأساسي",
+    "الموظف العامل الموظفة العاملة للموظف للعامل للموظفة للعاملة",
+    "الشركة المنشأة صاحب العمل الطرف الآخر الطرفين للطرف الأول الثاني لصاحب للشركة للمنشأة",
+)
+_LINK_WORDS = frozenset(normalize_arabic(word) for line in _LINK_LINES for word in line.split())
+_MAX_LINK_WORDS = 6
+_GAP_PUNCTUATION = re.compile(r"[():\-–\"«»]")
 
 
 @dataclass(frozen=True, slots=True)
@@ -380,6 +397,25 @@ class _Context:
         lead = normalize_arabic(self.text[max(0, quantity.start - LEAD_WINDOW) : quantity.start])
         return any(iter_folded_matches(lead, phrases))
 
+    def states(self, quantity: Quantity, cues: Sequence[tuple[int, int]]) -> bool:
+        """True if ``quantity`` reads as the amount a cue is about.
+
+        That is the case when the quantity comes right after a cue with only
+        linking words between ("إجازة سنوية مدتها 15 يوماً", "بإشعار كتابي قبل
+        30 يوماً"), or right before one ("15 يوماً إجازة سنوية"). A number in
+        another role, such as a deadline, a carry-over cap or an accrual rate
+        ("بواقع 2.5 يوم عن كل شهر"), is linked by other words and fails.
+        """
+        for start, end in cues:
+            if end <= quantity.start:
+                gap = normalize_arabic(self.text[end : quantity.start])
+                words = _GAP_PUNCTUATION.sub(" ", gap).split()
+                if len(words) <= _MAX_LINK_WORDS and all(w in _LINK_WORDS for w in words):
+                    return True
+            elif quantity.end <= start and not self.text[quantity.end : start].strip():
+                return True
+        return False
+
     def phrase_of(self, offset: int) -> int:
         """Index of the phrase (text between commas or sentence ends) holding ``offset``."""
         return len(_PHRASE_BREAK.findall(self.text, 0, offset))
@@ -449,7 +485,7 @@ def _apply(rule: Rule, context: _Context) -> Finding | None:
         return None
     kind, reason, judged = _judge(rule, context, candidates)
     if kind is FindingKind.VIOLATION:
-        kind, reason = _guard_violation(rule, context)
+        kind, reason = _guard_violation(rule, context, groups, judged)
     if rule.article_status is ArticleStatus.REVIEW_NEEDED:
         kind, reason = FindingKind.REVIEW_NEEDED, ReviewReason.ARTICLE_UNDER_REVIEW
     return Finding(rule, kind, judged, _message(rule, kind, judged, reason), reason)
@@ -569,12 +605,23 @@ def _verdict_under_ceiling(
     return FindingKind.REVIEW_NEEDED, ReviewReason.INEXACT_CONVERSION
 
 
-def _guard_violation(rule: Rule, context: _Context) -> tuple[FindingKind, ReviewReason | None]:
+def _guard_violation(
+    rule: Rule,
+    context: _Context,
+    groups: Sequence[Sequence[tuple[int, int]]],
+    judged: Sequence[Quantity],
+) -> tuple[FindingKind, ReviewReason | None]:
     """Downgrade a violation the clause does not fully establish."""
     if not all(context.has(group) for group in rule.requires_for_violation):
         return FindingKind.REVIEW_NEEDED, ReviewReason.CONDITION_NOT_STATED
     if rule.blocks_violation and context.has(rule.blocks_violation):
         return FindingKind.REVIEW_NEEDED, ReviewReason.POSSIBLE_EXCEPTION
+    # An anchored rule has already tied its one quantity to the anchor's phrase.
+    # Otherwise one judged quantity must read as the amount: they all agree on
+    # the violation (or add up to it), so one stated amount establishes it.
+    cues = [span for group in groups for span in group]
+    if not rule.anchor and not any(context.states(q, cues) for q in judged):
+        return FindingKind.REVIEW_NEEDED, ReviewReason.UNCLEAR_ROLE
     return FindingKind.VIOLATION, None
 
 

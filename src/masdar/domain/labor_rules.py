@@ -42,7 +42,18 @@ _HOURS_EXCEPTIONS = (
     "الجرد",
     "المواسم",
     "موسمية",
+    # Art. 106: emergencies and unusual pressure of work.
+    "الضرورة",
+    "ضرورة",
+    "ظروف عارضة",
+    "ضغط عمل",
+    "طارئة",
+    "طارئ",
+    "استثنائية",
 )
+# Leave clauses also state carry-over caps, balances, splits and cash in lieu;
+# none of those is the length of the entitlement.
+_NOT_ENTITLEMENT = ("الجزء", "جزء", "تجزئة", "تجزئتها", "تقسيم", "رصيد", "بدل نقدي", "بدلاً نقدياً")
 # Overtime and rest periods are counted in hours too, but are not the working day.
 _NOT_REGULAR_HOURS = ("إضافية", "إضافي", "راحة", "استراحة", "للراحة")
 _OVERTIME = (
@@ -120,7 +131,21 @@ NOTICE_EMPLOYER_MIN = Rule(
     # Art. 75(1)(b) governs indefinite contracts paid monthly; a fixed-term
     # contract or a non-monthly wage has other rules.
     requires_for_violation=(("غير محدد المدة", "غير محددة المدة", "مفتوح المدة"),),
-    blocks_violation=("اليومية", "باليومية", "بالقطعة", "بالساعة", "الأجر الأسبوعي", "غير شهري"),
+    blocks_violation=(
+        "اليومية",
+        "باليومية",
+        "بالقطعة",
+        "بالساعة",
+        "الأجر الأسبوعي",
+        "غير شهري",
+        # Either party may end the contract during probation (Art. 53).
+        "خلال فترة التجربة",
+        "أثناء فترة التجربة",
+        "في فترة التجربة",
+        "خلال التجربة",
+        "أثناء التجربة",
+        "خلال الفترة التجريبية",
+    ),
 )
 
 ANNUAL_LEAVE_MIN = Rule(
@@ -136,7 +161,8 @@ ANNUAL_LEAVE_MIN = Rule(
     limit=Quantity(21, Unit.DAY),
     units=_DAYS_EXACT,
     # The longer leave after five years is judged by the next rule.
-    skip_after=(*_CONDITION_WORDS, "تزاد إلى", "تزداد إلى", "ترتفع إلى", "تصبح"),
+    excludes=_NOT_ENTITLEMENT,
+    skip_after=(*_CONDITION_WORDS, "تزاد إلى", "تزداد إلى", "ترتفع إلى", "تصبح", "ترحيل"),
 )
 
 ANNUAL_LEAVE_AFTER_FIVE_YEARS_MIN = Rule(
@@ -153,7 +179,8 @@ ANNUAL_LEAVE_AFTER_FIVE_YEARS_MIN = Rule(
     limit=Quantity(30, Unit.DAY),
     units=_DAYS_EXACT,
     anchor=("خمس سنوات", "5 سنوات", "خمسة أعوام", "خمس سنين"),
-    skip_after=("قبل", "إكمال", "إتمام"),
+    excludes=_NOT_ENTITLEMENT,
+    skip_after=("قبل", "إكمال", "إتمام", "ترحيل"),
 )
 
 DAILY_HOURS_MAX = Rule(
@@ -260,7 +287,7 @@ MATERNITY_LEAVE_MIN = Rule(
     excludes=("مولود له", "زوجته", "للأب"),
     # "From four weeks before the due date" and "extend by a month unpaid" are
     # not the length of the paid leave.
-    skip_after=("قبل", "بعد", "تمديد", "تمديدها", "يمدد", "تمدد", "دون أجر"),
+    skip_after=("قبل", "بعد", "خلال", "تمديد", "تمديدها", "يمدد", "تمدد", "دون أجر"),
 )
 
 SICK_LEAVE_FULL_PAY_MIN = Rule(
@@ -288,7 +315,7 @@ SICK_LEAVE_FULL_PAY_MIN = Rule(
     limit=Quantity(30, Unit.DAY),
     units=_DAYS_EXACT,
     # The later tiers (three quarters, unpaid) are not the full-pay period.
-    skip_after=("نصف", "أرباع", "ربع", "دون أجر", "بدون أجر", "بعد", "مرور", "انقضاء"),
+    skip_after=("نصف", "أرباع", "ربع", "دون أجر", "بدون أجر", "بعد", "مرور", "انقضاء", "خلال"),
 )
 
 NON_COMPETE_MAX = Rule(

@@ -34,7 +34,13 @@ that counts is the law in force: the portal's main text is outdated for 50 Labor
      quantity before the next quantity;
    - words just before a quantity can mark it as a condition, not the amount
      (`قبل مرور 6 أشهر`), and are skipped per rule;
-   - several quantities with different verdicts give `review_needed`, never a pick.
+   - several quantities with different verdicts give `review_needed`, never a pick;
+   - **a violation needs the number to read as the amount the rule is about**: it must follow
+     a cue with only linking words between (`إجازة سنوية مدتها 15 يوماً`, `بإشعار كتابي قبل 30
+     يوماً`, `بأجر كامل لمدة`), or come right before one (`15 يوماً إجازة سنوية`). Otherwise
+     the verdict is `review_needed` (`unclear_role`). Leave and notice clauses are full of other
+     numbers: deadlines (`خلال ثلاثة أيام`), carry-over caps, balances, splits and accrual rates
+     (`بواقع 2.5 يوم عن كل شهر`). Without this check a floor reads every small number as a breach.
 4. **Unit conversion decides only when the whole range agrees.** Weeks to days and years to
    months are exact. A month is 28 to 31 days and a year 354 (Hijri) to 366 days, because Saudi
    contracts use either calendar. The checker converts to a range and decides only when both
@@ -103,7 +109,7 @@ changes the contract type rather than setting a limit; the worker's own notice (
 be compliant under Art. 8.
 
 ## Measurement
-`data/gold/clauses.v1.jsonl`: 75 clauses in the style of Saudi employment contracts and HR
+`data/gold/clauses.v1.jsonl`: 90 clauses in the style of Saudi employment contracts and HR
 policies (formal and plain wording, digits and number words), each with the expected findings.
 They mix violations, compliant clauses exactly at the limit, unit traps (months against days,
 weeks), phrasings that must not fire (negations, waiting periods, confidentiality, rest
@@ -113,18 +119,32 @@ only if both the rule and the verdict match.
 | set | clauses | violation P / R | compliant P / R | review P / R | exact clauses |
 |---|---|---|---|---|---|
 | cl-001…060, first run | 60 | 0.947 / 1.000 | 1.000 / 0.917 | 1.000 / 1.000 | 0.967 |
-| cl-061…075, first run (blind) | 15 | 1.000 / 0.750 | 0.857 / 0.750 | 0.500 / 1.000 | 0.733 |
-| all 75, recorded | 75 | **1.000 / 1.000** | 1.000 / 0.969 | 1.000 / 1.000 | 0.987 |
+| cl-061…075, first run (blind batch 1) | 15 | 1.000 / 0.750 | 0.857 / 0.750 | 0.500 / 1.000 | 0.733 |
+| cl-076…090, first run (blind batch 2) | 15 | **0.462** / 1.000 | 1.000 / 0.500 | 1.000 / 0.000 | 0.533 |
+| all 90, recorded | 90 | **1.000 / 1.000** | 1.000 / 0.941 | 0.846 / 1.000 | 0.967 |
 
 How the numbers were made, honestly: the first 60 clauses were labeled before the checker was
 run on them. Their first run produced one false violation (cl-054, a marriage leave read from the
-next phrase's number), which led to the phrase-bounded anchor. The last 15 were then written and
-labeled, and run once without changes; that blind run is the best estimate of quality on unseen
-wording. It exposed two general flaws (a rate word belonging to the next number, and a number
-claimed by a farther topic) and two vocabulary gaps (`منافس`, `مدفوعة الأجر بالكامل`), which were
-fixed. The recorded row is therefore measured on clauses that influenced the code. The one
-remaining miss (cl-018) needs each number tied to its party ("30 days for the employee and 60 for
-the company"); the checker stays silent there rather than guess.
+next phrase's number), which led to the phrase-bounded anchor. Two blind batches of 15 were then
+written and labeled, and each was run once before any change; those first runs are the best
+estimate of quality on unseen wording.
+
+- Batch 1 exposed two general flaws (a rate word belonging to the next number, and a number
+  claimed by a farther topic) and two vocabulary gaps (`منافس`, `مدفوعة الأجر بالكامل`).
+- Batch 2 targeted ordinary HR-policy sentences with other numbers in leave and notice clauses,
+  plus a positive control for each. Its first run gave **7 false violations out of 13** (accrual
+  rate, carry-over cap, minimum split, medical-report deadline, Art. 106 emergency hours, notice
+  during probation, cash for a leave balance). This is the measured reason for the "amount"
+  check in decision 3, the Art. 106 words in the hours exceptions, the probation exception on
+  notice, and the carry-over, balance and split words on annual leave. All six positive controls
+  are still violations after the change.
+
+The recorded row is measured on clauses that influenced the code, so it overstates quality on new
+wording; the blind rows are the honest estimate, and batch 2 shows that untested phrasing can
+still produce false violations. Every remaining miss is silence or "review needed", never a wrong
+verdict: cl-018 needs each number tied to its party ("30 days for the employee and 60 for the
+company"), cl-076 (an accrual rate equal to 30 days a year) and cl-081 (notice during probation)
+come out as review needed.
 
 `tests/integration/test_checker_quality.py` holds violation precision at exactly 1.0 and the other
 scores within 0.01 of the recorded row.
@@ -137,9 +157,10 @@ scores within 0.01 of the recorded row.
 - ⚠️ Only quantitative Labor Law rules in v1. PDPL and Companies Law clauses get related articles
   but no verdict, and qualitative duties (written form, Arabic language, non-discrimination) are
   not checked.
-- ⚠️ Cues are hand-written Arabic phrases. Wording the rules do not know produces no finding (a
-  miss, shown beside the related articles), not a wrong verdict, but recall on unseen wording is
-  lower than on the labeled set (see the blind row).
+- ⚠️ Cues are hand-written Arabic phrases. Wording the rules do not know usually produces no
+  finding or "review needed", but the second blind batch shows that a number in an unforeseen
+  role can still be misread. Quality on unseen wording is lower than the recorded row; every new
+  false violation found in use should become a labeled clause and a regression test.
 - ⚠️ One annotator wrote and labeled every clause, and the same person wrote the rules. The set
   is small and partly used for development. A second annotator and a larger blind set are the
   next step.
