@@ -1,0 +1,17 @@
+# Allow-list: the build context holds only what the Dockerfile copies.
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!LICENSE
+!src/
+!data/sources/
+!data/gold/
+!data/dataset/stats.json
+!data/dataset/DATASET_CARD.md
+
+# Never ship caches or local secrets, even from inside allowed folders.
+**/__pycache__
+**/*.py[oc]
+**/.DS_Store
+**/.env
