@@ -20,6 +20,17 @@ _RESULT_ROW = re.compile(r"^\| \**`(?P<name>[^`]+)`\**[^|]*((?:\| \**[0-9.]+\** 
 _NUMBER = re.compile(r"[0-9]+\.[0-9]+|[0-9]+")
 
 
+def _section(title: str) -> str:
+    """The README text under one ``### title`` heading, up to the next heading."""
+    start = README.index(f"### {title}")
+    end = README.find("\n#", start + 1)
+    return README[start : end if end != -1 else None]
+
+
+def _json(name: str) -> Any:
+    return json.loads((REPO_ROOT / "eval" / name).read_text(encoding="utf-8"))
+
+
 def _cells(row: str) -> list[float]:
     return [float(n) for n in _NUMBER.findall(row)]
 
@@ -31,7 +42,7 @@ def _result(name: str) -> dict[str, Any]:
 
 
 def test_results_table_matches_the_evaluation_files() -> None:
-    rows = {match["name"]: _cells(match[2]) for match in _RESULT_ROW.finditer(README)}
+    rows = {match["name"]: _cells(match[2]) for match in _RESULT_ROW.finditer(_section("Search"))}
     assert "dense+rerank" in rows, "README results table not found"
     for name, cells in rows.items():
         result = _result(name)
@@ -49,7 +60,7 @@ def test_results_table_matches_the_evaluation_files() -> None:
 def test_served_pipeline_is_the_best_in_the_table() -> None:
     served = re.search(r"\*\*`(?P<name>[^`]+)`\*\* \(served\)", README)
     assert served is not None
-    names = [match["name"] for match in _RESULT_ROW.finditer(README)]
+    names = [match["name"] for match in _RESULT_ROW.finditer(_section("Search"))]
     best = max(names, key=lambda name: _result(name)["overall"]["ndcg_at_10"])
     assert served["name"] == best
 
@@ -67,3 +78,33 @@ def test_dataset_table_matches_the_stats() -> None:
             statuses["repealed"],
         ]
         assert [int(n) for n in _NUMBER.findall(row.split("|", 2)[2])] == expected, law["law_id"]
+
+
+def test_answer_table_matches_the_answer_report() -> None:
+    report = _json("answers.json")
+    row = next(line for line in _section("Answers").splitlines() if line.startswith("| 82 gold"))
+    expected = [
+        report["attribution_accuracy"],
+        report["wrong_answer_rate"],
+        report["false_refusal_rate"],
+        report["correct_refusal_rate"],
+    ]
+    assert _cells(row.split("|", 2)[2]) == pytest.approx(
+        [round(value, 3) for value in expected], abs=5e-4
+    )
+
+
+def test_checker_table_matches_the_checker_report() -> None:
+    reports = _json("checker.json")
+    rows = re.findall(
+        r"^\| `([^`]+)` \|[^|]*((?:\| [0-9.]+ )+)\|$", _section("Contract checker"), re.M
+    )
+    assert {name for name, _ in rows} == {"development", "blind-v2"}
+    for name, cells in rows:
+        kinds = reports[name]["by_kind"]
+        expected = [
+            kinds["violation"]["precision"],
+            kinds["violation"]["recall"],
+            kinds["compliant"]["precision"],
+        ]
+        assert _cells(cells) == pytest.approx([round(v, 2) for v in expected], abs=5e-3), name

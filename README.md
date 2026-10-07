@@ -1,10 +1,21 @@
 # Masdar · مصدر
 
-**Arabic-first retrieval engine for Saudi regulations, built for HR, legal and compliance teams.**
-Ask a question in Arabic and get the exact governing article with a precise citation, from the
-Labor Law, the Personal Data Protection Law (PDPL) and the Companies Law.
+**Arabic-first legal search, answers and contract checking over Saudi regulations, built for HR,
+legal and compliance teams.** It covers the Labor Law, the Personal Data Protection Law (PDPL) and
+the Companies Law, as they are **in force** after amendments, and it runs on local models only:
+no LLM, no API key, nothing generated.
 
-> محرّك بحث عربي في الأنظمة السعودية لفرق الموارد البشرية والقانونية والامتثال: سؤال بالعربي ← المادة النظامية الدقيقة مع الاستشهاد.
+> محرّك عربي للأنظمة السعودية لفرق الموارد البشرية والقانونية والامتثال: يبحث في النص الساري، ويجيب بجملة مقتبسة حرفياً من المادة، ويفحص العقود والسياسات مقابل حدود نظام العمل، مع الاستشهاد دائماً.
+
+| | What it does | Interfaces |
+|---|---|---|
+| **Search** | Question in Arabic (formal or dialect) → ranked articles, each with status (in force, amended, review needed) and its decree | web, `GET /api/search`, `masdar search`, MCP `search_regulations` |
+| **Answer** | Quotes the sentence of the law that answers, verbatim, with the citation, or says it found none | web, `GET /api/answer`, `masdar answer`, MCP `answer_question` |
+| **Check a contract** | Splits a contract or HR policy into clauses and flags any that breaks a Labor Law limit, citing the article | web, `POST /api/check`, `masdar check`, MCP `check_contract` |
+
+<p align="center">
+  <img src="docs/images/answer.png" alt="An answer quoted verbatim from Article 109 of the Labor Law, with its citation" width="640">
+</p>
 
 ## Why it is hard
 - **Arabic breaks naive search.** The same word appears with or without diacritics, with
@@ -32,7 +43,9 @@ Labor Law, the Personal Data Protection Law (PDPL) and the Companies Law.
 | Dense retrieval | `multilingual-e5-small`, local, cached embeddings | ✅ |
 | Fusion and reranking | Reciprocal Rank Fusion; cross-encoder reranker (`mmarco-mMiniLMv2`) | ✅ |
 | Evaluation | Recall@k, MRR, graded nDCG@10 on a versioned gold set; regression gate | ✅ |
-| Interfaces | Arabic web UI, REST API, CLI, **MCP server** (`search_regulations`, `get_article`) | ✅ |
+| Answers | Extractive: the best sentence of the top articles, scored by the same cross-encoder; abstains below a cross-validated threshold | ✅ |
+| Contract checker | Clause splitting, Arabic quantity extraction, rules as code pinned to the text in force; blind-set evaluation | ✅ |
+| Interfaces | Arabic web UI, REST API, CLI, **MCP server** (search, answer, check, article lookup) | ✅ |
 
 Each technique is tied to its paper in [docs/RESEARCH.md](docs/RESEARCH.md).
 
@@ -53,6 +66,11 @@ It ships with **82 hand-written HR and compliance questions** and graded relevan
 avoid the law's own wording (for example "الأوفرتايم").
 
 ## Results
+
+Everything below is measured by `make eval` and written to `eval/`; a test fails if any number in
+this README differs from those files.
+
+### Search
 nDCG@10, Recall@10 and MRR@10 at article level on the 82 gold questions. Every number below
 comes from `eval/results/*.json` (written by `make eval`), and a test fails if this table and
 those files ever disagree. The full breakdown by style and by law is in
@@ -76,11 +94,43 @@ those files ever disagree. The full breakdown by style and by law is in
 - **Read with care.** One annotator and 82 questions: differences below about 0.02 are noise,
   and models were chosen on this same set, so the absolute numbers are somewhat optimistic.
 
+### Answers ([ADR-0009](docs/decisions/0009-extractive-answers-and-abstention.md))
+The answer is a sentence copied from the article in force, so it cannot state anything the law
+does not say. Below a confidence threshold it refuses instead of guessing.
+
+| Measured on | Quote from a correct article | Wrong answer | Refused when the law has the answer | Refused when it does not |
+|---|---|---|---|---|
+| 82 gold + 32 out-of-scope questions | 0.817 | 0.000 | 0.171 | 0.969 |
+
+The threshold was chosen by two-fold cross-validation; on the held-out folds the wrong-answer rate
+was 1.4% (ADR-0009). Refusals are uneven: dialect questions are refused far more often than formal
+ones, because the small reranker is sensitive to wording.
+
+### Contract checker ([ADR-0010](docs/decisions/0010-contract-checker-rules-as-code.md))
+16 quantitative Labor Law limits (probation, notice, leave, working hours, non-compete, loan
+deductions…), each pinned by a test to the article's text **in force**. Five of them differ from
+the text the official portal displays (for example probation 90 → 180 days, maternity leave 10 →
+12 weeks). Anything uncertain is "review needed", never a verdict.
+
+| Clause set | Written by | Violation precision | Violation recall | Compliant precision |
+|---|---|---|---|---|
+| `development` | the rules' author | 1.00 | 1.00 | 1.00 |
+| `blind-v2` | an independent author, after v2 | 1.00 | 0.28 | 0.91 |
+
+**A flag is reliable; silence is not.** Across two independently written blind sets the checker
+never called a compliant clause a violation, but it finds only a minority of violations worded in
+ways it has not seen. The product says so, and ADR-0010 records every blind measurement as taken.
+
+<p align="center">
+  <img src="docs/images/checker.png" alt="Contract checker flagging a 200-day probation, a 10-hour working day, 30 days' notice and a 3-year non-compete, each with the Labor Law article" width="560">
+</p>
+
 ## Quickstart
 ```bash
 make setup     # install dependencies, including the local models' extra, and git hooks
 make serve     # web UI and API on http://localhost:8000 (first start downloads two ~0.47 GB models)
-uv run masdar search "كم مدة إجازة الأمومة؟"
+uv run masdar answer "كم الإجازة السنوية للعامل؟"
+uv run masdar check contract.txt   # or: cat contract.txt | uv run masdar check -
 make eval      # score every pipeline on the gold set -> eval/RESULTS.md
 make check     # lint, types, architecture rules, tests
 make dataset   # rebuild the corpus offline from committed snapshots (byte-identical)
@@ -89,9 +139,10 @@ make dataset   # rebuild the corpus offline from committed snapshots (byte-ident
 `MASDAR_PIPELINE=bm25` serves the lexical pipeline with no model download.
 
 ### Use it from an AI agent (MCP)
-`make mcp` starts a stdio MCP server with two read-only tools: `search_regulations`
-(question → ranked, cited articles with their status) and `get_article` (full text in force and
-amendment history). Any MCP client, such as Claude Desktop, can launch it with
+`make mcp` starts a stdio MCP server with four read-only tools: `search_regulations`
+(question → ranked, cited articles with their status), `answer_question` (the verbatim quote or a
+refusal), `check_contract` (clause-by-clause verdicts with citations) and `get_article` (full text
+in force and amendment history). Any MCP client, such as Claude Desktop, can launch it with
 `uv run --directory /path/to/masdar masdar-mcp`.
 
 ## Engineering

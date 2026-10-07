@@ -1,0 +1,14 @@
+{
+  "any_relevant_accuracy": 0.8293,
+  "attributed": 67,
+  "attribution_accuracy": 0.8171,
+  "correct_refusal_rate": 0.9688,
+  "correct_refusals": 31,
+  "false_refusal_rate": 0.1707,
+  "false_refusals": 14,
+  "gold_questions": 82,
+  "out_of_scope_questions": 32,
+  "relevant": 68,
+  "service": "extractive(dense+rerank)",
+  "wrong_answer_rate": 0.0
+}

@@ -1,0 +1,384 @@
+{
+  "blind-v1": {
+    "by_kind": {
+      "compliant": {
+        "correct": 16,
+        "expected": 17,
+        "precision": 1.0,
+        "predicted": 16,
+        "recall": 0.9412
+      },
+      "review_needed": {
+        "correct": 6,
+        "expected": 8,
+        "precision": 0.75,
+        "predicted": 8,
+        "recall": 0.75
+      },
+      "violation": {
+        "correct": 12,
+        "expected": 15,
+        "precision": 1.0,
+        "predicted": 12,
+        "recall": 0.8
+      }
+    },
+    "clauses": 40,
+    "exact_accuracy": 0.85,
+    "misses": [
+      {
+        "clause_id": "bl-002",
+        "expected": [
+          "probation-max:violation"
+        ],
+        "predicted": [
+          "probation-max:review_needed"
+        ]
+      },
+      {
+        "clause_id": "bl-004",
+        "expected": [
+          "probation-max:review_needed"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "bl-010",
+        "expected": [
+          "notice-employer-min:review_needed"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "bl-027",
+        "expected": [
+          "non-compete-max:compliant"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "bl-030",
+        "expected": [
+          "hajj-leave-min:violation"
+        ],
+        "predicted": [
+          "hajj-leave-min:review_needed"
+        ]
+      },
+      {
+        "clause_id": "bl-033",
+        "expected": [
+          "marriage-leave-min:compliant",
+          "paternity-leave-min:violation"
+        ],
+        "predicted": [
+          "marriage-leave-min:compliant"
+        ]
+      }
+    ]
+  },
+  "blind-v2": {
+    "by_kind": {
+      "compliant": {
+        "correct": 20,
+        "expected": 23,
+        "precision": 0.9091,
+        "predicted": 22,
+        "recall": 0.8696
+      },
+      "review_needed": {
+        "correct": 3,
+        "expected": 11,
+        "precision": 0.5,
+        "predicted": 6,
+        "recall": 0.2727
+      },
+      "violation": {
+        "correct": 5,
+        "expected": 18,
+        "precision": 1.0,
+        "predicted": 5,
+        "recall": 0.2778
+      }
+    },
+    "clauses": 50,
+    "exact_accuracy": 0.54,
+    "misses": [
+      {
+        "clause_id": "b2-003",
+        "expected": [
+          "probation-max:violation"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-008",
+        "expected": [
+          "notice-employer-min:violation"
+        ],
+        "predicted": [
+          "notice-employer-min:review_needed"
+        ]
+      },
+      {
+        "clause_id": "b2-012",
+        "expected": [
+          "notice-employer-min:review_needed"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-013",
+        "expected": [
+          "notice-employer-min:compliant"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-014",
+        "expected": [
+          "notice-employer-min:review_needed"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-015",
+        "expected": [
+          "annual-leave-min:violation",
+          "hajj-leave-min:compliant",
+          "marriage-leave-min:compliant"
+        ],
+        "predicted": [
+          "hajj-leave-min:compliant",
+          "marriage-leave-min:compliant"
+        ]
+      },
+      {
+        "clause_id": "b2-017",
+        "expected": [
+          "annual-leave-5y-min:violation",
+          "annual-leave-min:compliant"
+        ],
+        "predicted": [
+          "annual-leave-min:compliant"
+        ]
+      },
+      {
+        "clause_id": "b2-018",
+        "expected": [
+          "annual-leave-5y-min:violation",
+          "annual-leave-min:compliant"
+        ],
+        "predicted": [
+          "annual-leave-min:compliant"
+        ]
+      },
+      {
+        "clause_id": "b2-020",
+        "expected": [
+          "annual-leave-min:violation"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-021",
+        "expected": [
+          "daily-hours-max:review_needed",
+          "weekly-hours-max:violation"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-022",
+        "expected": [
+          "daily-hours-max:compliant",
+          "overtime-rate-min:review_needed",
+          "weekly-hours-max:compliant"
+        ],
+        "predicted": [
+          "daily-hours-max:compliant",
+          "weekly-hours-max:compliant"
+        ]
+      },
+      {
+        "clause_id": "b2-023",
+        "expected": [
+          "daily-hours-max:review_needed",
+          "weekly-hours-max:compliant"
+        ],
+        "predicted": [
+          "weekly-hours-max:compliant"
+        ]
+      },
+      {
+        "clause_id": "b2-024",
+        "expected": [
+          "overtime-rate-min:review_needed"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-025",
+        "expected": [
+          "ramadan-daily-hours-max:compliant",
+          "ramadan-weekly-hours-max:compliant"
+        ],
+        "predicted": [
+          "ramadan-daily-hours-max:compliant",
+          "ramadan-weekly-hours-max:compliant",
+          "weekly-hours-max:compliant"
+        ]
+      },
+      {
+        "clause_id": "b2-027",
+        "expected": [
+          "ramadan-daily-hours-max:compliant",
+          "ramadan-weekly-hours-max:violation"
+        ],
+        "predicted": [
+          "daily-hours-max:compliant"
+        ]
+      },
+      {
+        "clause_id": "b2-028",
+        "expected": [
+          "overtime-rate-min:review_needed"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-029",
+        "expected": [
+          "overtime-rate-min:review_needed"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-031",
+        "expected": [
+          "maternity-leave-min:violation"
+        ],
+        "predicted": [
+          "maternity-leave-min:review_needed"
+        ]
+      },
+      {
+        "clause_id": "b2-032",
+        "expected": [
+          "sick-leave-full-pay-min:compliant"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-033",
+        "expected": [
+          "sick-leave-full-pay-min:violation"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-035",
+        "expected": [
+          "non-compete-max:violation"
+        ],
+        "predicted": [
+          "non-compete-max:review_needed"
+        ]
+      },
+      {
+        "clause_id": "b2-040",
+        "expected": [
+          "loan-deduction-max:violation"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "b2-044",
+        "expected": [
+          "paternity-leave-min:violation"
+        ],
+        "predicted": []
+      }
+    ]
+  },
+  "development": {
+    "by_kind": {
+      "compliant": {
+        "correct": 55,
+        "expected": 59,
+        "precision": 1.0,
+        "predicted": 55,
+        "recall": 0.9322
+      },
+      "review_needed": {
+        "correct": 17,
+        "expected": 18,
+        "precision": 0.85,
+        "predicted": 20,
+        "recall": 0.9444
+      },
+      "violation": {
+        "correct": 50,
+        "expected": 50,
+        "precision": 1.0,
+        "predicted": 50,
+        "recall": 1.0
+      }
+    },
+    "clauses": 144,
+    "exact_accuracy": 0.9514,
+    "misses": [
+      {
+        "clause_id": "cl-018",
+        "expected": [
+          "notice-employer-min:compliant"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "cl-076",
+        "expected": [
+          "annual-leave-min:compliant"
+        ],
+        "predicted": [
+          "annual-leave-min:review_needed"
+        ]
+      },
+      {
+        "clause_id": "cl-081",
+        "expected": [],
+        "predicted": [
+          "notice-employer-min:review_needed"
+        ]
+      },
+      {
+        "clause_id": "cl-130",
+        "expected": [
+          "hajj-leave-min:compliant"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "cl-134",
+        "expected": [
+          "sick-leave-full-pay-min:review_needed"
+        ],
+        "predicted": []
+      },
+      {
+        "clause_id": "cl-136",
+        "expected": [],
+        "predicted": [
+          "notice-employer-min:review_needed"
+        ]
+      },
+      {
+        "clause_id": "cl-138",
+        "expected": [
+          "marriage-leave-min:compliant"
+        ],
+        "predicted": []
+      }
+    ]
+  }
+}
