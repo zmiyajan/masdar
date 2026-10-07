@@ -6,6 +6,8 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-07
+
 ### Added
 - Project scaffolding: uv, Python 3.12, src layout, Makefile, pre-commit, GitHub Actions CI
   (lint, types, architecture, tests, dependency audit, secret scan).
