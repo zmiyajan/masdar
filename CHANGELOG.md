@@ -44,3 +44,9 @@ uses [Semantic Versioning](https://semver.org/).
   deterministic verdicts for 16 Labor Law limits pinned to the text in force, with related
   articles per clause (no LLM, no API); a development set and an independently written blind
   set (ADR-0010). `POST /api/check`, `masdar check`, MCP `check_contract`, and a web section.
+
+### Security
+- Public demo limits: per-client rate limit keyed on the trusted proxy's `X-Forwarded-For`
+  entry, a stricter limit for contract checks, request bodies over 64 KB refused before they
+  are read, CSP and security headers on every response including errors, serialised model
+  inference, and bounded work per contract (clause length and count).
