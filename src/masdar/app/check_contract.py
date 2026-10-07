@@ -11,6 +11,7 @@ from collections.abc import Collection, Sequence
 from masdar.app.search import SearchService
 from masdar.domain.checker_quality import CheckerQualityReport, LabeledClause, score_checker
 from masdar.domain.compliance import (
+    Clause,
     ClauseReport,
     ContractReport,
     Rule,
@@ -18,10 +19,17 @@ from masdar.domain.compliance import (
     clause_query,
     split_clauses,
 )
-from masdar.domain.errors import InvalidDomainObjectError
+from masdar.domain.errors import InvalidDocumentError, InvalidDomainObjectError
+from masdar.domain.search import ArticleResult
 
 DEFAULT_MAX_CHARS = 20_000
 """About ten pages of contract: enough for real documents, bounded for a public demo."""
+
+MAX_CLAUSES = 300
+"""Ten pages hold well under this; more means the text is not a contract (one word per line)."""
+
+_MIN_SEARCH_WORDS = 3
+"""Shorter clauses (headings, "أولاً:") carry no topic worth a search."""
 
 
 class CheckContract:
@@ -65,25 +73,34 @@ class CheckContract:
             One `ClauseReport` per clause, in document order.
 
         Raises:
-            InvalidDomainObjectError: If the text is blank or longer than ``max_chars``.
+            InvalidDocumentError: If the text is blank, longer than
+                ``max_chars``, split into more than `MAX_CLAUSES` clauses, or
+                ``laws`` excludes every rule (an empty report would read as a
+                clean bill).
         """
         if not text.strip():
-            raise InvalidDomainObjectError("The document is empty")
+            raise InvalidDocumentError("The document is empty")
         if len(text) > self._max_chars:
-            raise InvalidDomainObjectError(
-                f"The document is longer than {self._max_chars} characters"
-            )
+            raise InvalidDocumentError(f"The document is longer than {self._max_chars} characters")
         rules = [rule for rule in self._rules if not laws or rule.law_id in laws]
+        if not rules:
+            raise InvalidDocumentError(
+                f"No checking rules exist yet for {sorted(laws or ())}; only the Labor Law has them"
+            )
+        clauses = split_clauses(text)
+        if len(clauses) > MAX_CLAUSES:
+            raise InvalidDocumentError(f"The document has more than {MAX_CLAUSES} clauses")
         return ContractReport(
             tuple(
-                ClauseReport(
-                    clause,
-                    check_clause(clause.text, rules),
-                    tuple(self._search.search(clause_query(clause.text), self._related_k, laws)),
-                )
-                for clause in split_clauses(text)
+                ClauseReport(clause, check_clause(clause.text, rules), self._related(clause, laws))
+                for clause in clauses
             )
         )
+
+    def _related(self, clause: Clause, laws: Collection[str] | None) -> tuple[ArticleResult, ...]:
+        if len(clause.text.split()) < _MIN_SEARCH_WORDS:
+            return ()
+        return tuple(self._search.search(clause_query(clause.text), self._related_k, laws))
 
 
 def measure_checker(

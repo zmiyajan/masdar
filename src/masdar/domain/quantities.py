@@ -291,6 +291,10 @@ def _joined_part(rest: str, stage: str, unit: int, total: int) -> tuple[int, str
     return None
 
 
+_MAX_DIGITS = 6
+"""Longer digit runs are identifiers; a contract states no period of a million days."""
+
+
 def _parse_numeral(tokens: Sequence[_Token], i: int) -> _Number | None:
     """Digits or number words at token ``i``, optionally inside parentheses."""
     j = i
@@ -298,6 +302,9 @@ def _parse_numeral(tokens: Sequence[_Token], i: int) -> _Number | None:
     if opened:
         j += 1
     if _DIGITS.fullmatch(tokens[j].text):
+        if len(tokens[j].text) > _MAX_DIGITS:
+            # An account or ID number, never a period or a rate.
+            return None
         number = _Number(float(tokens[j].text), j, j + 1)
     else:
         parsed = _parse_words(tokens, j)

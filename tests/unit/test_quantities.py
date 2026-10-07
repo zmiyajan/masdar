@@ -237,3 +237,8 @@ def test_embedded_quantity_is_found_with_its_span(prefix: str, number: int, unit
     text = f"{prefix} {number} {unit} انتهى"
     spans = [text[q.start : q.end] for q in extract_quantities(text) if q.value == number]
     assert f"{number} {unit}" in spans
+
+
+def test_identifier_length_digit_runs_are_not_quantities() -> None:
+    # float("9" * 400) is inf; such runs are account or ID numbers.
+    assert extract_quantities("9" * 400 + " يوما") == []

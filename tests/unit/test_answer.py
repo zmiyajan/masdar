@@ -217,6 +217,13 @@ class TestAnswerService:
         assert answer.evidence == ()
         assert len(answer.related) == 2
 
+    def test_the_quoted_article_is_always_among_the_related(self) -> None:
+        # Asked for one related article while the quote comes from the second.
+        answer = service(KeywordScorer({"ستين": 5.0})).answer("كم مدة الإشعار؟", related=1)
+        assert answer.top is not None
+        assert answer.top.article.article_id == "labor-law:75"
+        assert [r.article.article_id for r in answer.related] == ["labor-law:53", "labor-law:75"]
+
     def test_article_score_is_added_to_the_sentence_score(self) -> None:
         # Same sentence score everywhere; the reranker prefers the second article.
         answer = service(

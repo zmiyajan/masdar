@@ -452,16 +452,17 @@
     checkStatus.textContent = "جارٍ الفحص…";
     checkList.replaceChildren();
     quiet.hidden = true;
-    const submit = checkForm.querySelector("[type=submit]");
-    submit.disabled = true;
+    const buttons = [checkForm.querySelector("[type=submit]"), document.getElementById("check-sample")];
+    buttons.forEach((button) => { button.disabled = true; });
     try {
       const response = await fetch("/api/check", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ text }),
       });
-      const body = await response.json();
-      if (!response.ok) {
+      // A proxy error page is not JSON; it is still a server answer, not a lost connection.
+      const body = await response.json().catch(() => null);
+      if (!response.ok || !body) {
         checkStatus.dataset.tone = "error";
         checkStatus.textContent = body?.error?.message_ar || "تعذّر فحص النص. حاول مرة أخرى.";
         return;
@@ -471,7 +472,7 @@
       checkStatus.dataset.tone = "error";
       checkStatus.textContent = "تعذّر الاتصال بالخادم. تحقّق من اتصالك ثم أعد المحاولة.";
     } finally {
-      submit.disabled = false;
+      buttons.forEach((button) => { button.disabled = false; });
     }
   }
 

@@ -353,3 +353,34 @@ class TestCheck:
         response = client.post("/api/check", json=payload)
         assert response.status_code == 422
         assert response.json()["error"]["code"] == code
+
+
+class TestRequestLimits:
+    def test_a_huge_body_is_refused_before_it_is_read(self, client: TestClient) -> None:
+        response = client.post(
+            "/api/check",
+            content=b'{"text": "' + b"a" * (api.MAX_BODY_BYTES + 1) + b'"}',
+            headers={"Content-Type": "application/json"},
+        )
+        assert response.status_code == 413
+        assert response.json()["error"]["code"] == "body_too_large"
+        assert response.headers["X-Content-Type-Options"] == "nosniff"
+
+    def test_a_body_of_unknown_size_is_refused(self, client: TestClient) -> None:
+        def chunks() -> Iterator[bytes]:
+            yield b'{"text": "x"}'
+
+        response = client.post(
+            "/api/check", content=chunks(), headers={"Content-Type": "application/json"}
+        )
+        assert response.status_code == 411
+
+    def test_checks_have_their_own_stricter_limit(
+        self, service: SearchService, settings: Settings
+    ) -> None:
+        app = create_app(service, settings, check_limiter=RateLimiter(limit=1))
+        with TestClient(app) as client:
+            first = client.post("/api/check", json={"text": TestCheck.CONTRACT})
+            second = client.post("/api/check", json={"text": TestCheck.CONTRACT})
+            search = client.get("/api/search", params={"q": "س"})
+        assert (first.status_code, second.status_code, search.status_code) == (200, 429, 200)

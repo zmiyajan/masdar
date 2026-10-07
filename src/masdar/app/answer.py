@@ -133,7 +133,9 @@ class AnswerService:
             Evidence(candidate.result.article, candidate.sentence, candidate.score)
             for candidate in chosen
         )
-        return Answer(text, AnswerStatus.ANSWERED, evidence, results[:shown])
+        # The quoted article must be among the related ones the caller shows.
+        quoted = next(i for i, r in enumerate(results) if r.article.article_id == best_article)
+        return Answer(text, AnswerStatus.ANSWERED, evidence, results[: max(shown, quoted + 1)])
 
     def _rank(self, question: str, related: Sequence[ArticleResult]) -> list[_Candidate]:
         """Every sentence of ``related``, best first.

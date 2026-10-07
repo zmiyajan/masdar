@@ -1,6 +1,7 @@
 """Tests for clause splitting and rule matching in the contract checker."""
 
 import dataclasses
+import time
 
 import pytest
 from hypothesis import given
@@ -8,6 +9,7 @@ from hypothesis import strategies as st
 
 from masdar.domain.amendments import ArticleStatus
 from masdar.domain.compliance import (
+    MAX_CLAUSE_CHARS,
     Clause,
     ClauseReport,
     Comparator,
@@ -344,3 +346,15 @@ def test_an_extension_in_the_next_sentence_keeps_the_total_open() -> None:
 def test_reduced_pay_is_never_a_clean_compliant(pay: str, kind: FindingKind) -> None:
     text = f"للموظفة إجازة وضع مدتها اثنا عشر أسبوعاً {pay}."
     assert _verdicts(text) == [("maternity-leave-min", kind)]
+
+
+def test_a_long_clause_stays_fast() -> None:
+    # Phrase lookups used to rescan the clause: this input took about a minute.
+    clause = ("إجازة سنوية 5 أيام، " * 400)[:MAX_CLAUSE_CHARS]
+    started = time.perf_counter()
+    check_clause(clause, LABOR_RULES)
+    assert time.perf_counter() - started < 2.0
+
+
+def test_text_beyond_one_clause_gets_no_verdict() -> None:
+    assert check_clause("فترة التجربة 200 يوم. " * 300, LABOR_RULES) == ()

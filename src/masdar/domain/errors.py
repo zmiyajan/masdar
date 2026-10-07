@@ -13,6 +13,10 @@ class InvalidDomainObjectError(MasdarError, ValueError):
     """A domain object was constructed with values that break its invariants."""
 
 
+class InvalidDocumentError(InvalidDomainObjectError):
+    """A document given to the contract checker cannot be checked as sent."""
+
+
 class ArticleHeadingError(MasdarError, ValueError):
     """An article heading could not be parsed into an article number."""
 

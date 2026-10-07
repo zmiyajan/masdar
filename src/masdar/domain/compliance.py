@@ -20,6 +20,7 @@ evidence leaves no doubt:
 """
 
 import re
+from bisect import bisect_right
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
@@ -415,6 +416,9 @@ def clause_query(text: str) -> str:
 
 # ---------------------------------------------------------------------- checking
 
+MAX_CLAUSE_CHARS = 3_000
+"""Longest clause the rules analyse; longer text gets related articles but no verdict."""
+
 
 @dataclass(frozen=True, slots=True)
 class _Context:
@@ -425,6 +429,20 @@ class _Context:
     quantities: tuple[Quantity, ...]
     # Every rule that applies to the clause, with the spans of its topic cue.
     topics: tuple[tuple[Rule, tuple[tuple[int, int], ...]], ...] = ()
+    # Ends of the phrase breaks, found once: phrase lookups run for every
+    # (quantity, cue) pair, and rescanning the clause each time made a long
+    # clause quadratic (a 20 KB clause took about a minute).
+    breaks: tuple[int, ...] = ()
+
+    @classmethod
+    def of(cls, text: str) -> "_Context":
+        """Prepare ``text`` once: folded form, quantities and phrase breaks."""
+        return cls(
+            text,
+            fold(text),
+            tuple(extract_quantities(text)),
+            breaks=tuple(match.end() for match in _PHRASE_BREAK.finditer(text)),
+        )
 
     def spans(self, phrases: Sequence[str]) -> list[tuple[int, int]]:
         """Input spans of whole-word matches of ``phrases``."""
@@ -445,8 +463,8 @@ class _Context:
 
     def phrase_start(self, offset: int) -> int:
         """Offset where the phrase holding ``offset`` begins."""
-        breaks = [m.end() for m in _PHRASE_BREAK.finditer(self.text, 0, offset)]
-        return breaks[-1] if breaks else 0
+        index = self.phrase_of(offset)
+        return self.breaks[index - 1] if index else 0
 
     def same_phrase(self, quantity: Quantity, spans: Sequence[tuple[int, int]]) -> bool:
         """True if one of ``spans`` lies in the phrase holding ``quantity``."""
@@ -486,7 +504,7 @@ class _Context:
 
     def phrase_of(self, offset: int) -> int:
         """Index of the phrase (text between commas or sentence ends) holding ``offset``."""
-        return len(_PHRASE_BREAK.findall(self.text, 0, offset))
+        return bisect_right(self.breaks, offset)
 
     def after(self, quantity: Quantity, phrases: Sequence[str]) -> bool:
         """True if any of ``phrases`` starts shortly after ``quantity``.
@@ -537,14 +555,18 @@ def check_clause(text: str, rules: Sequence[Rule]) -> tuple[Finding, ...]:
     Returns:
         One finding per rule that fired, in rule order; usually none.
     """
-    plain = _Context(text, fold(text), tuple(extract_quantities(text)))
+    if len(text) > MAX_CLAUSE_CHARS:
+        # Real clauses are a few hundred characters; anything far longer is not
+        # one clause, and analysing it would only cost CPU on a shared server.
+        return ()
+    plain = _Context.of(text)
     # Only rules that apply to this clause compete for its numbers.
     topics = tuple(
         (rule, tuple(plain.spans(rule.cues[0])))
         for rule in rules
         if all(plain.has(group) for group in rule.cues)
     )
-    context = _Context(plain.text, plain.folded, plain.quantities, topics)
+    context = _Context(plain.text, plain.folded, plain.quantities, topics, plain.breaks)
     findings = (_apply(rule, context) for rule in rules)
     return tuple(finding for finding in findings if finding is not None)
 

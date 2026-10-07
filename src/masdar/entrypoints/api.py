@@ -25,7 +25,7 @@ from masdar.app.check_contract import CheckContract
 from masdar.app.search import SearchService
 from masdar.config import Settings
 from masdar.container import answer_service, check_contract_use_case, default_search_service
-from masdar.domain.errors import InvalidDomainObjectError, MasdarError
+from masdar.domain.errors import InvalidDocumentError, InvalidDomainObjectError, MasdarError
 from masdar.domain.search import MAX_QUERY_CHARS
 from masdar.entrypoints.laws import LawSummary, load_law_summaries
 from masdar.entrypoints.schemas import (
@@ -45,6 +45,12 @@ from masdar.entrypoints.security import RateLimiter, security_headers
 WEB_DIR = Path(__file__).parent / "web"
 MAX_K = 20
 _HEALTH_PATH = "/api/health"
+_CHECK_PATH = "/api/check"
+MAX_BODY_BYTES = 64 * 1024
+"""Largest request body accepted, checked before it is read (20,000 Arabic characters
+take about 40 KB in UTF-8). Without it a huge body is buffered and parsed first."""
+CHECKS_PER_MINUTE = 6
+"""A contract check costs many searches; it gets its own, stricter limit."""
 _log = logging.getLogger(__name__)
 
 _ERRORS: dict[int | str, dict[str, Any]] = {
@@ -72,6 +78,7 @@ def create_app(
     *,
     answers: AnswerService | None = None,
     rate_limiter: RateLimiter | None = None,
+    check_limiter: RateLimiter | None = None,
 ) -> FastAPI:
     """Build the FastAPI application.
 
@@ -81,6 +88,8 @@ def create_app(
         settings: Settings; read from the environment when omitted.
         answers: The answer service; derived from ``service`` when omitted
             (none for pipelines without a cross-encoder). Tests inject one.
+        check_limiter: Extra per-client limit for ``/api/check``;
+            `CHECKS_PER_MINUTE` when omitted.
         rate_limiter: Per-client limit for ``/api`` routes; 30 requests a
             minute when omitted.
     """
@@ -105,7 +114,12 @@ def create_app(
         docs_url="/docs",
         redoc_url=None,
     )
-    _install_middleware(app, limiter, config.trusted_proxy_hops)
+    _install_middleware(
+        app,
+        limiter,
+        check_limiter or RateLimiter(limit=CHECKS_PER_MINUTE),
+        config.trusted_proxy_hops,
+    )
     _install_error_handlers(app)
 
     @app.get("/api/health", response_model=HealthResponse, tags=["meta"])
@@ -222,22 +236,53 @@ def client_key(request: Request, trusted_proxy_hops: int) -> str:
     return forwarded[-trusted_proxy_hops] if len(forwarded) >= trusted_proxy_hops else peer
 
 
-def _install_middleware(app: FastAPI, limiter: RateLimiter, trusted_proxy_hops: int) -> None:
+def _body_rejection(request: Request) -> JSONResponse | None:
+    """Refuse a body that is too large, or of unknown size, before reading it."""
+    if request.method not in {"POST", "PUT", "PATCH"}:
+        return None
+    declared = request.headers.get("content-length")
+    if declared is None or not declared.isdigit():
+        return _error(
+            411,
+            "length_required",
+            "Send the request with a Content-Length header.",
+            "أرسل الطلب مع تحديد حجمه.",
+        )
+    if int(declared) > MAX_BODY_BYTES:
+        return _error(
+            413,
+            "body_too_large",
+            f"The request body is larger than {MAX_BODY_BYTES // 1024} KB.",
+            "النص المرسل أكبر من المسموح.",
+        )
+    return None
+
+
+def _install_middleware(
+    app: FastAPI, limiter: RateLimiter, check_limiter: RateLimiter, trusted_proxy_hops: int
+) -> None:
     @app.middleware("http")
     async def guard(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         path = request.url.path
-        response: Response
+        response: Response | None = _body_rejection(request)
         wait = None
-        if path.startswith("/api/") and path != _HEALTH_PATH:
-            wait = limiter.retry_after(client_key(request, trusted_proxy_hops))
-        if wait is not None:
+        applied = limiter
+        if response is None and path.startswith("/api/") and path != _HEALTH_PATH:
+            key = client_key(request, trusted_proxy_hops)
+            wait = limiter.retry_after(key)
+            if wait is None and path == _CHECK_PATH:
+                applied = check_limiter
+                wait = check_limiter.retry_after(key)
+        if response is not None:
+            pass
+        elif wait is not None:
             response = _error(
                 429,
                 "rate_limited",
-                f"Too many requests: at most {limiter.limit} per minute. Try again shortly.",
-                f"طلبات كثيرة: الحد {limiter.limit} طلباً في الدقيقة. حاول بعد قليل.",
+                f"Too many requests: at most {applied.limit} per minute. Try again shortly.",
+                f"طلبات كثيرة: الحد {applied.limit} طلباً في الدقيقة. حاول بعد قليل.",
             )
             response.headers["Retry-After"] = str(max(1, math.ceil(wait)))
         else:
@@ -261,18 +306,31 @@ def _install_middleware(app: FastAPI, limiter: RateLimiter, trusted_proxy_hops: 
 def _install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(InvalidDomainObjectError)
     async def invalid_query(request: Request, error: InvalidDomainObjectError) -> JSONResponse:
-        if request.url.path == "/api/check":
+        if request.url.path == _CHECK_PATH:
+            # Not a problem with the document (that is InvalidDocumentError):
+            # an invariant broke inside the checker, which is our bug.
+            _log.error("Invariant broken while checking a document: %s", error)
             return _error(
-                422,
-                "invalid_document",
-                str(error),
-                "النص فارغ أو أطول من المسموح (20,000 حرف).",
+                500,
+                "internal_error",
+                "Something went wrong on our side. Please try again.",
+                "حدث خطأ في الخادم. حاول مرة أخرى.",
             )
         return _error(
             422,
             "invalid_query",
             str(error),
             f"السؤال غير صالح: اكتب سؤالاً لا يتجاوز {MAX_QUERY_CHARS} حرف.",
+        )
+
+    @app.exception_handler(InvalidDocumentError)
+    async def invalid_document(_: Request, error: InvalidDocumentError) -> JSONResponse:
+        return _error(
+            422,
+            "invalid_document",
+            str(error),
+            "تعذّر فحص النص كما أُرسل: تأكد أنه غير فارغ، ولا يتجاوز 20,000 حرف أو 300 بند، "
+            "وأن الفحص على نظام العمل.",
         )
 
     @app.exception_handler(_UnknownLawError)

@@ -2,10 +2,10 @@
 
 import pytest
 
-from masdar.app.check_contract import DEFAULT_MAX_CHARS, CheckContract
+from masdar.app.check_contract import DEFAULT_MAX_CHARS, MAX_CLAUSES, CheckContract
 from masdar.app.search import SearchService
 from masdar.domain.compliance import FindingKind
-from masdar.domain.errors import InvalidDomainObjectError
+from masdar.domain.errors import InvalidDocumentError, InvalidDomainObjectError
 from masdar.domain.labor_rules import LABOR_RULES
 from masdar.domain.models import Article, Chunk, Hit
 from masdar.domain.ordinals import ArticleNumber
@@ -70,10 +70,21 @@ def test_every_clause_gets_findings_and_related_articles(
     assert retriever.queries[1] == "1- يخضع الموظف لفترة تجربة مدتها 200 يوم."
 
 
-def test_laws_filter_restricts_rules_and_related_articles(checker: CheckContract) -> None:
-    report = checker.run(CONTRACT, laws=["pdpl"])
-    assert report.counts[FindingKind.VIOLATION] == 0
-    assert {a.article.law_id for r in report.clauses for a in r.related} == {"pdpl"}
+def test_a_law_without_rules_is_refused_not_reported_clean(checker: CheckContract) -> None:
+    # Zero findings for a PDPL-only check would read as a clean bill.
+    with pytest.raises(InvalidDocumentError, match="only the Labor Law"):
+        checker.run(CONTRACT, laws=["pdpl"])
+
+
+def test_too_many_clauses_is_refused(checker: CheckContract) -> None:
+    with pytest.raises(InvalidDocumentError, match="clauses"):
+        checker.run("بند قصير هنا\n" * (MAX_CLAUSES + 1))
+
+
+def test_headings_are_not_searched(checker: CheckContract, retriever: FakeRetriever) -> None:
+    report = checker.run("أولاً:\nيخضع الموظف لفترة تجربة مدتها تسعون يوماً.")
+    assert [len(clause.related) > 0 for clause in report.clauses] == [False, True]
+    assert len(retriever.queries) == 1
 
 
 def test_long_clauses_are_cut_for_retrieval(

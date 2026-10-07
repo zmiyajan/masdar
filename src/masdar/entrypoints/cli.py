@@ -133,7 +133,10 @@ _VERDICT_LABELS = {"violation": "مخالفة", "compliant": "متوافق", "re
 
 
 def _check(args: argparse.Namespace, settings: Settings) -> str:
-    text = sys.stdin.read() if args.file == "-" else Path(args.file).read_text(encoding="utf-8")
+    try:
+        text = sys.stdin.read() if args.file == "-" else Path(args.file).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise MasdarError(f"cannot read {args.file}: {error}") from error
     report = check_contract_use_case(default_search_service(settings)).run(text)
     lines = []
     for clause in report.clauses:

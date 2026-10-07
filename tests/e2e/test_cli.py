@@ -112,3 +112,10 @@ def test_search_rejects_a_bad_k(k: str) -> None:
 def test_search_says_when_nothing_matches(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["search", "في من"]) == 0
     assert "no matching articles" in capsys.readouterr().out
+
+
+def test_check_reports_an_unreadable_file(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert main(["check", str(tmp_path / "missing.txt")]) == 1
+    assert "cannot read" in capsys.readouterr().err

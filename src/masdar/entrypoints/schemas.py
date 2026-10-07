@@ -124,7 +124,9 @@ class CheckRequest(_Frozen):
 
     text: str = Field(description="The document, as pasted (Arabic).", max_length=20_000)
     laws: list[str] | None = Field(
-        default=None, description="Restrict related articles and rules to these law ids."
+        default=None,
+        max_length=10,
+        description="Restrict related articles and rules to these law ids.",
     )
 
 
