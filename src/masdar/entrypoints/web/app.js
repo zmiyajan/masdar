@@ -81,6 +81,22 @@
     return fragment;
   }
 
+  // Long articles (definitions, penalty tables) would bury the answer, so the
+  // card shows a window around the first matching word; the full article is
+  // one click away.
+  const EXCERPT_WORDS = 70;
+  const EXCERPT_LEAD = 15;
+
+  function excerpt(text, stems) {
+    const words = text.split(/(\s+)/);
+    const wordCount = words.filter((w) => w.trim()).length;
+    if (wordCount <= EXCERPT_WORDS * 1.3) return text;
+    const first = Math.max(0, words.findIndex((w) => w.trim() && matches(w, stems)));
+    const start = Math.max(0, first - EXCERPT_LEAD * 2);
+    const slice = words.slice(start, start + EXCERPT_WORDS * 2).join("").trim();
+    return `${start > 0 ? "… " : ""}${slice} …`;
+  }
+
   // ------------------------------------------------------------------- rendering
   const AMENDMENT_VERBS = {
     replace: "عُدّل نصّ هذه المادة",
@@ -119,8 +135,9 @@
     if (trail.length) trailEl.textContent = trail.join(" ‹ ");
     else trailEl.remove();
 
-    node.querySelector(".card__text").append(highlighted(hit.matched_text, stems));
-    if (hit.text.trim() !== hit.matched_text.trim()) {
+    const shown = excerpt(hit.matched_text, stems);
+    node.querySelector(".card__text").append(highlighted(shown, stems));
+    if (shown !== hit.matched_text || hit.text.trim() !== hit.matched_text.trim()) {
       const details = node.querySelector(".card__full");
       details.hidden = false;
       details.querySelector(".card__text--full").append(highlighted(hit.text, stems));
@@ -218,6 +235,17 @@
     }
   }
 
+  // An ISO date inside RTL text renders reversed ("07-10-2026"); a written
+  // Arabic date reads correctly. Latin digits match the rest of the page.
+  const DATE_FORMAT = new Intl.DateTimeFormat("ar-u-nu-latn", {
+    day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+  });
+
+  function snapshotDate(iso) {
+    const date = new Date(`${iso}T00:00:00Z`);
+    return Number.isNaN(date.getTime()) ? iso : DATE_FORMAT.format(date);
+  }
+
   function renderLaws(laws, preselected) {
     lawTitles = new Map(laws.map((law) => [law.law_id, law.title]));
     filters.replaceChildren(...laws.map((law) => {
@@ -242,7 +270,7 @@
       link.textContent = law.title;
       const meta = document.createElement("span");
       meta.className = "sources__meta";
-      meta.textContent = `${law.current} مادة سارية، نسخة ${law.retrieved_on}`;
+      meta.textContent = `${law.current} مادة سارية، نسخة ${snapshotDate(law.retrieved_on)}`;
       item.append(link, meta);
       return item;
     }));
