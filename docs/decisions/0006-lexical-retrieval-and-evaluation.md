@@ -98,7 +98,7 @@ The style columns are nDCG@10. The full metrics are in `eval/RESULTS.md`.
   questions dip by 0.033, but there are only 15 of them. We keep the prefix: it is what lets
   "in the Labor Law" match an article whose text never names its law (see `domain/chunking.py`),
   and dense retrieval will use the same chunks.
-- **Stopwords: kept on.** Removing them helps only together with stemming: +0.025 nDCG@10 and
+- **Stopword removal: on.** Removing stopwords helps only together with stemming: +0.025 nDCG@10 and
   +0.079 on dialect. Without stemming it is neutral (0.630 kept versus 0.620 removed). The
   mechanism is visible in the stems: light10 turns function words into short pseudo-stems that
   collide with real ones (`علي` → `عل`, `الي` → `ال`, `يكون` → `يك`, `هذه` → `هذ`). The gain
