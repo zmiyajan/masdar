@@ -12,7 +12,15 @@ that to deduplicate and fuse result lists (e.g. using a chunk as a dict key).
 import math
 from dataclasses import dataclass
 
+from masdar.domain.amendments import Amendment, ArticleStatus
 from masdar.domain.errors import InvalidDomainObjectError
+from masdar.domain.ordinals import ArticleNumber
+
+# Statuses whose text is served by default. Repealed and superseded articles stay
+# in the corpus for history but are not current law.
+CURRENT_STATUSES = frozenset(
+    {ArticleStatus.IN_FORCE, ArticleStatus.AMENDED, ArticleStatus.REVIEW_NEEDED}
+)
 
 
 def _require_text(value: str, what: str) -> None:
@@ -22,57 +30,71 @@ def _require_text(value: str, what: str) -> None:
 
 @dataclass(frozen=True, slots=True)
 class Article:
-    """One article (مادة) of a law, as published.
+    """One article (مادة) of a law, with the text in force and its history.
 
     Attributes:
         law_id: Stable slug of the law, e.g. ``"labor-law"``.
         law_title: Official Arabic title, e.g. ``"نظام العمل"``.
-        number: 1-based position of the article within the law.
-        heading: The article heading as published, e.g. ``"المادة الأولى"``.
-        text: Original article text, kept verbatim for display and citation.
+        number: Official number, e.g. 79 or 79 bis.
+        heading: Clean heading for citations, e.g. ``"المادة الأولى"``.
+        text: The text in force (see ``status`` for how much to trust it).
+        status: How ``text`` relates to the law in force.
+        title: The article's own title, when the law gives one (``التعريفات``).
         part: The part (باب) the article belongs to, if any.
         chapter: The chapter (فصل) the article belongs to, if any.
+        original_text: The originally published wording; ``None`` for articles
+            added later by amendment.
+        amendments: Every amendment note attached to the article.
     """
 
     law_id: str
     law_title: str
-    number: int
+    number: ArticleNumber
     heading: str
     text: str
+    status: ArticleStatus = ArticleStatus.IN_FORCE
+    title: str | None = None
     part: str | None = None
     chapter: str | None = None
+    original_text: str | None = None
+    amendments: tuple[Amendment, ...] = ()
 
     def __post_init__(self) -> None:
         """Reject articles that could never be cited correctly."""
         _require_text(self.law_id, "Article.law_id")
         _require_text(self.law_title, "Article.law_title")
         _require_text(self.heading, "Article.heading")
-        # bool is a subclass of int; True must not silently become article 1.
-        if isinstance(self.number, bool) or self.number < 1:
-            raise InvalidDomainObjectError(
-                f"Article.number must be an int >= 1, got {self.number!r}"
-            )
-        _require_text(self.text, f"Article {self.law_id}#{self.number} text")
+        _require_text(self.text, f"Article {self.article_id} text")
+
+    @property
+    def article_id(self) -> str:
+        """Stable id, e.g. ``"labor-law:79-bis"``; unique among current articles."""
+        return f"{self.law_id}:{self.number.slug}"
 
     @property
     def citation(self) -> str:
         """Human-readable citation, e.g. ``"نظام العمل — المادة الأولى"``."""
         return f"{self.law_title} — {self.heading}"
 
+    @property
+    def is_current(self) -> bool:
+        """True when the article belongs in default search results."""
+        return self.status in CURRENT_STATUSES
+
 
 @dataclass(frozen=True, slots=True)
 class Chunk:
     """The unit that gets indexed and retrieved.
 
-    Two versions of the text are kept side by side. ``text`` is the original and
-    is what users see and what citations quote. ``normalized_text`` is the
-    lossy, search-friendly form produced by the Arabic normalizer; it is used
-    only for matching, never shown.
+    Two versions of the text are kept side by side. ``text`` is what users see
+    and what citations quote. ``normalized_text`` is the lossy, search-friendly
+    form produced by the Arabic normalizer (optionally prefixed with the
+    article's context); it is used only for matching, never shown.
 
     Attributes:
-        chunk_id: Globally unique and stable, e.g. ``"labor-law:12:0"``.
+        chunk_id: Globally unique and stable, e.g. ``"labor-law:12#0"``.
         article: The article this chunk was cut from.
-        text: Original text of this chunk.
+        text: Display text of this chunk.
         normalized_text: Normalized text used for indexing.
     """
 

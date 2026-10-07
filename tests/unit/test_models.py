@@ -5,15 +5,17 @@ import math
 
 import pytest
 
+from masdar.domain.amendments import ArticleStatus
 from masdar.domain.errors import InvalidDomainObjectError, MasdarError
 from masdar.domain.models import Article, Chunk, Hit
+from masdar.domain.ordinals import ArticleNumber
 
 
 def make_article(**overrides: object) -> Article:
     fields: dict[str, object] = {
         "law_id": "labor-law",
         "law_title": "نظام العمل",
-        "number": 1,
+        "number": ArticleNumber(1),
         "heading": "المادة الأولى",
         "text": "يسمى هذا النظام نظام العمل.",
     }
@@ -53,8 +55,6 @@ class TestArticle:
             pytest.param({"law_id": "  "}, id="blank-law-id"),
             pytest.param({"law_title": ""}, id="blank-law-title"),
             pytest.param({"heading": " "}, id="blank-heading"),
-            pytest.param({"number": 0}, id="zero-number"),
-            pytest.param({"number": True}, id="bool-number"),
             pytest.param({"text": "\n"}, id="blank-text"),
         ],
     )
@@ -62,10 +62,28 @@ class TestArticle:
         with pytest.raises(InvalidDomainObjectError):
             make_article(**overrides)
 
+    def test_article_id_uses_number_slug(self) -> None:
+        assert make_article(number=ArticleNumber(79, bis=True)).article_id == "labor-law:79-bis"
+
+    @pytest.mark.parametrize(
+        ("status", "current"),
+        [
+            (ArticleStatus.IN_FORCE, True),
+            (ArticleStatus.AMENDED, True),
+            (ArticleStatus.REVIEW_NEEDED, True),
+            (ArticleStatus.REPEALED, False),
+            (ArticleStatus.SUPERSEDED, False),
+        ],
+    )
+    def test_only_in_force_like_statuses_are_current(
+        self, status: ArticleStatus, current: bool
+    ) -> None:
+        assert make_article(status=status).is_current is current
+
     def test_is_immutable(self) -> None:
         article = make_article()
         with pytest.raises(dataclasses.FrozenInstanceError):
-            article.number = 2  # type: ignore[misc]
+            article.number = ArticleNumber(2)  # type: ignore[misc]
 
 
 class TestChunk:

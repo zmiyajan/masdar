@@ -61,6 +61,21 @@ for display and citations, and a separate `normalized_text` used only for matchi
 [ADR-0003](decisions/0003-arabic-normalization.md).
 
 ## Built so far
-- `domain/models.py`: `Article`, `Chunk`, `Hit`, each with invariants.
-- `domain/arabic.py`: `ArabicNormalizer`, configurable and idempotent.
-- `domain/errors.py`: the `MasdarError` hierarchy.
+| Layer | Module | What it does |
+|---|---|---|
+| domain | `models.py` | `Article` (text in force, status, history), `Chunk`, `Hit` |
+| domain | `arabic.py` | `ArabicNormalizer`, configurable and idempotent |
+| domain | `ordinals.py` | Arabic ordinal headings to `ArticleNumber` (bis, renumbered) |
+| domain | `amendments.py` | Classify amendment notes and resolve the text in force (ADR-0005) |
+| domain | `articles.py` | Build articles from raw blocks; articles that exist only inside notes |
+| domain | `chunking.py` | Paragraph-aware chunks with a contextual search prefix |
+| domain | `dataset.py` | Dataset report (counts per law and status) |
+| ports | `law_source.py`, `dataset_writer.py` | Where laws come from and where datasets go |
+| adapters | `boe/` | Catalog, polite HTTP client with gzip snapshots, read-only HTML parser |
+| adapters | `beir_writer.py` | BEIR `corpus.jsonl`, `stats.json`, generated dataset card |
+| app | `build_dataset.py` | Load, resolve, validate integrity, write |
+| entrypoints | `cli.py` | `masdar dataset [--offline \| --refresh] [--laws ...]` |
+| root | `config.py`, `container.py` | Validated settings and the composition root |
+
+**Dataset flow:** `BoeClient` (snapshot or HTTP) → `parse_law_html` → `PublishedLaw` →
+`build_articles` (ordinals + amendments) → integrity check → `BeirDatasetWriter`.

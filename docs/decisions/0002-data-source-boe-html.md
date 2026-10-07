@@ -16,21 +16,35 @@ or as scanned images with no text layer. We checked the source before writing an
     `<h3>المادة …` (heading) and a `div.HTMLContainer` (the body).
   - `div.article_item_popup` holds the **amendment history** and must be excluded from the
     article body.
-- The Labor Law page holds 250 top-level `article_item` blocks. 246 have an `المادة …`
-  heading, and the last one is article 245 (الخامسة والأربعون بعد المائتين). 4 blocks have no
-  heading in the expected markup. **Open:** the loader must reconcile the blocks against the
-  245 official articles, and a loader test must pin the count.
+- The Labor Law page holds 250 article blocks. *Resolved on 2026-10-07:* 246 have a normal
+  `المادة …` heading. The other four are two "bis" articles (`( التاسعة والسبعين مكرر )`) and two
+  renumbered articles (`(المادة … حالياً) (المادة … سابقاً)`). All 574 headings across the three
+  laws parse into numbers (`domain/ordinals.py`).
+- **The main text is the original wording; amendments live in popups as free text.** This
+  finding drove [ADR-0005](0005-amendment-resolution.md).
+- Companies Law headings carry article titles (`المادة الأولى: التعريفات`), which are kept as
+  metadata.
 - The text uses Arabic-Indic digits (٥٦٠٣٢), so digit normalization is required (ADR-0003).
 - `robots.txt` allows these pages and asks for `Crawl-delay: 10`.
+- The server does not send its intermediate TLS certificate, so Python's `certifi` bundle
+  cannot verify it, while the OS trust store can.
 
 ## Decision
 - Parse the official HTML; do not use PDF.
-- The loader is an adapter (`adapters/boe_loader.py`), honours a delay of at least 10 seconds
-  between requests, caches raw HTML under `data/raw/` (ignored by git), and works offline from
-  the cache.
-- Article bodies come only from the article's own `HTMLContainer`, never from popups.
+- `adapters/boe/` is split into `catalog.py` (laws and URLs), `client.py` (HTTP), `parser.py`
+  (HTML to raw blocks) and `source.py` (the `LawSource` port).
+- **Snapshots, not a throwaway cache.** Each page is stored gzipped (`<law>.html.gz`) next to
+  a manifest (URL, fetch date, SHA-256) in `data/sources/boe/`, **committed to git** (about
+  180 KB). Builds are offline and byte-for-byte reproducible. `make dataset-refresh` is the
+  only command that contacts the portal, and it waits at least 10 seconds between requests.
+- TLS uses the OS trust store via `truststore`, with verification fully on. Disabling
+  verification was rejected.
+- The parser **never mutates the parse tree**. An earlier version removed popups during the
+  walk and corrupted later blocks. Article bodies come only from the article's own
+  `HTMLContainer`, never from popups.
 
 ## Consequences
 - ✅ Clean text and exact article boundaries, so chunking follows the law's real structure.
-- ⚠️ If the site's markup changes, the parser breaks. Parser tests run against a saved HTML
-  fixture, so a markup change shows up as a clear test failure.
+- ✅ Anyone can rebuild the exact published dataset from the repository alone.
+- ⚠️ If the site's markup changes, the parser breaks. Golden tests on the committed snapshots,
+  plus parser tests on hand-written HTML, make that a clear failure rather than silent drift.

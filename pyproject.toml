@@ -9,7 +9,15 @@ authors = [
 requires-python = ">=3.12"
 # The core is intentionally dependency-free so far: every library is added in the
 # phase that needs it, and heavy ML packages will live behind optional extras.
-dependencies = []
+dependencies = [
+    "beautifulsoup4>=4.13",
+    "httpx>=0.28",
+    "pydantic-settings>=2.6",
+    "truststore>=0.10",
+]
+
+[project.scripts]
+masdar = "masdar.entrypoints.cli:main"
 
 [dependency-groups]
 dev = [
@@ -98,3 +106,22 @@ name = "Domain does not import the outer layers (third parties: tests/unit/test_
 type = "forbidden"
 source_modules = ["masdar.domain"]
 forbidden_modules = ["masdar.ports", "masdar.adapters", "masdar.app", "masdar.entrypoints"]
+
+[[tool.importlinter.contracts]]
+name = "Use cases and ports never import adapters, entrypoints or the container"
+type = "forbidden"
+source_modules = ["masdar.app", "masdar.ports"]
+forbidden_modules = ["masdar.adapters", "masdar.entrypoints", "masdar.container", "masdar.config"]
+
+[[tool.importlinter.contracts]]
+name = "Adapters do not depend on use cases, entrypoints or the container"
+type = "forbidden"
+source_modules = ["masdar.adapters"]
+forbidden_modules = ["masdar.app", "masdar.entrypoints", "masdar.container", "masdar.config"]
+
+[[tool.importlinter.contracts]]
+name = "Entrypoints reach adapters only through the container"
+type = "forbidden"
+source_modules = ["masdar.entrypoints"]
+forbidden_modules = ["masdar.adapters"]
+allow_indirect_imports = true

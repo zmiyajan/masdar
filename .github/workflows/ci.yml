@@ -25,6 +25,10 @@ jobs:
         run: uv sync --locked
       - name: make check
         run: make check
+      - name: Dataset is reproducible from committed snapshots
+        run: |
+          make dataset
+          git diff --exit-code -- data/dataset/DATASET_CARD.md data/dataset/stats.json
 
   audit:
     name: Dependency audit

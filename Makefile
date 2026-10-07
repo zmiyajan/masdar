@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 UV := uv run
 
-.PHONY: help setup fmt lint typecheck arch test audit check clean
+.PHONY: help setup fmt lint typecheck arch test audit check dataset dataset-refresh clean
 
 help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
@@ -32,6 +32,12 @@ audit: ## Scan the locked dependencies (hash-pinned) for known vulnerabilities
 		| $(UV) --with pip-audit pip-audit --requirement /dev/stdin --disable-pip --require-hashes
 
 check: lint typecheck arch test ## Everything CI runs on every push
+
+dataset: ## Build the BEIR corpus + dataset card from committed snapshots (offline)
+	$(UV) masdar dataset --offline
+
+dataset-refresh: ## Re-download source pages (10s crawl delay), then rebuild
+	$(UV) masdar dataset --refresh
 
 clean: ## Remove caches and build artifacts
 	rm -rf .mypy_cache .ruff_cache .pytest_cache .hypothesis .import_linter_cache .coverage htmlcov dist

@@ -32,6 +32,8 @@ container.py is the only place that wires adapters into use cases.
 | Everything CI runs | `make check` |
 | Format + safe fixes | `make fmt` |
 | Tests only | `make test` |
+| Rebuild dataset offline | `make dataset` |
+| Re-download sources (network, 10 s delay) | `make dataset-refresh` |
 
 ## Conventions
 - Python 3.12, `mypy --strict`, ruff (see `pyproject.toml`). No `Any` in `domain/`.
@@ -41,6 +43,9 @@ container.py is the only place that wires adapters into use cases.
 - Write invisible / control characters as `chr(0x200C)`, never as literal characters.
 - Every non-obvious decision gets an ADR in `docs/decisions/`.
 - New library? Add it in the phase that needs it; heavy ML packages go in optional extras.
+- Never apply an amendment you cannot classify with certainty; mark it `review_needed` (ADR-0005).
+- Parsers read; they never mutate the parse tree.
+- Changing the golden counts in `tests/integration/test_boe_snapshots.py` requires a reason in the commit message.
 - Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:`, `refactor:`).
 
 ## Definition of done for any change

@@ -1,0 +1,81 @@
+{
+  "name": "Saudi Regulations Arabic Retrieval Benchmark",
+  "version": "1.0.0",
+  "laws": [
+    {
+      "law_id": "labor-law",
+      "title": "نظام العمل",
+      "source_url": "https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/08381293-6388-48e2-8ad2-a9a700f2aa94/1",
+      "retrieved_on": "2026-10-07",
+      "articles": 252,
+      "current": 211,
+      "statuses": {
+        "in_force": 140,
+        "amended": 53,
+        "review_needed": 18,
+        "repealed": 29,
+        "superseded": 12
+      },
+      "amendment_notes": {
+        "replace": 56,
+        "add": 10,
+        "repeal": 30,
+        "renumber": 0,
+        "consolidate": 17,
+        "partial": 21
+      },
+      "outdated_on_portal": 50,
+      "chunks": 212
+    },
+    {
+      "law_id": "pdpl",
+      "title": "نظام حماية البيانات الشخصية",
+      "source_url": "https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/b7cfae89-828e-4994-b167-adaa00e37188/1",
+      "retrieved_on": "2026-10-07",
+      "articles": 43,
+      "current": 42,
+      "statuses": {
+        "in_force": 19,
+        "amended": 12,
+        "review_needed": 11,
+        "repealed": 1,
+        "superseded": 0
+      },
+      "amendment_notes": {
+        "replace": 12,
+        "add": 0,
+        "repeal": 1,
+        "renumber": 0,
+        "consolidate": 0,
+        "partial": 11
+      },
+      "outdated_on_portal": 12,
+      "chunks": 43
+    },
+    {
+      "law_id": "companies-law",
+      "title": "نظام الشركات",
+      "source_url": "https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/a8376aea-1bc3-49d4-9027-aed900b555af/1",
+      "retrieved_on": "2026-10-07",
+      "articles": 281,
+      "current": 281,
+      "statuses": {
+        "in_force": 281,
+        "amended": 0,
+        "review_needed": 0,
+        "repealed": 0,
+        "superseded": 0
+      },
+      "amendment_notes": {
+        "replace": 0,
+        "add": 0,
+        "repeal": 0,
+        "renumber": 0,
+        "consolidate": 0,
+        "partial": 0
+      },
+      "outdated_on_portal": 0,
+      "chunks": 285
+    }
+  ]
+}

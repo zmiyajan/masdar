@@ -20,14 +20,14 @@ take from it and the place it lives in the code. **Status** is updated as each p
 |---|---|---|---|
 | Cormack, Clarke & Büttcher (2009), *Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods*, SIGIR | RRF: merge lexical and dense lists using ranks rather than scores (k=60) | `domain/fusion.py` | planned |
 | Nogueira & Cho (2019), *Passage Re-ranking with BERT*, arXiv:1901.04085 | Cross-encoder reranking of the fused top-k | `adapters/cross_encoder.py` | planned |
-| Anthropic (2024), *Introducing Contextual Retrieval* | Prepend context to every chunk before indexing. We use the law/part/chapter titles, so no LLM call is needed | `domain/chunking.py` | planned |
+| Anthropic (2024), *Introducing Contextual Retrieval* | Prepend context to every chunk before indexing. We use the law/part/chapter titles, so no LLM call is needed | `domain/chunking.py` | ✅ |
 
 ## Evaluation
 
 | Paper | Idea we use | Where | Status |
 |---|---|---|---|
 | Järvelin & Kekäläinen (2002), *Cumulated Gain-Based Evaluation of IR Techniques*, ACM TOIS | nDCG@10 | `evaluation/metrics.py` | planned |
-| Thakur et al. (2021), *BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of IR Models*, NeurIPS | Evaluation protocol: Recall@k, nDCG@10, BM25 as the baseline to beat | `evaluation/` | planned |
+| Thakur et al. (2021), *BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of IR Models*, NeurIPS | Corpus layout (`corpus.jsonl` / `queries.jsonl` / `qrels`) and evaluation protocol: Recall@k, nDCG@10, BM25 as the baseline to beat | `adapters/beir_writer.py`, `evaluation/` | corpus ✅, eval planned |
 | Es et al. (2023), *RAGAS: Automated Evaluation of Retrieval Augmented Generation*, arXiv:2309.15217 | Faithfulness of the optional LLM answer to the cited articles | `evaluation/` | planned |
 
 ## Generation (optional layer)
