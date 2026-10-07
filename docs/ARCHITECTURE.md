@@ -70,12 +70,20 @@ for display and citations, and a separate `normalized_text` used only for matchi
 | domain | `articles.py` | Build articles from raw blocks; articles that exist only inside notes |
 | domain | `chunking.py` | Paragraph-aware chunks with a contextual search prefix |
 | domain | `dataset.py` | Dataset report (counts per law and status) |
+| domain | `tokenize.py` | Arabic tokenizer, stopwords, light10 stemmer (ADR-0006) |
+| domain | `metrics.py`, `evaluation.py` | Recall@k, MRR@10, graded nDCG@10; per-style and per-law reports |
 | ports | `law_source.py`, `dataset_writer.py` | Where laws come from and where datasets go |
 | adapters | `boe/` | Catalog, polite HTTP client with gzip snapshots, read-only HTML parser |
 | adapters | `beir_writer.py` | BEIR `corpus.jsonl`, `stats.json`, generated dataset card |
+| adapters | `bm25.py` | `Bm25Retriever` (rank-bm25) with one analyzer for documents and queries |
+| adapters | `eval_writer.py` | `eval/results/*.json`, generated `eval/RESULTS.md`, `eval/baseline.json` |
 | app | `build_dataset.py` | Load, resolve, validate integrity, write |
-| entrypoints | `cli.py` | `masdar dataset [--offline \| --refresh] [--laws ...]` |
+| app | `evaluate.py` | Run a `SearchService` over the gold set and score articles |
+| entrypoints | `cli.py` | `masdar dataset [--offline \| --refresh] [--laws ...]`, `masdar eval`, `masdar search` |
 | root | `config.py`, `container.py` | Validated settings and the composition root |
 
 **Dataset flow:** `BoeClient` (snapshot or HTTP) → `parse_law_html` → `PublishedLaw` →
 `build_articles` (ordinals + amendments) → integrity check → `BeirDatasetWriter`.
+
+**Evaluation flow:** `LEXICAL_PIPELINES` (container) → `SearchService` → `Evaluate` (gold
+questions → article rankings → `metrics`) → `EvaluationReport` → `EvalResultsWriter`.
