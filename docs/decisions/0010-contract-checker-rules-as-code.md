@@ -196,3 +196,57 @@ worded differently from the hand-written cues (bullet lists such as "الزوا�
 الشركة … لمدة ثلاث سنوات", loan instalments "تُستقطع … بنسبة 25%") fell to silence or "review needed".
 The development numbers above overstate quality; this row is the honest estimate for v1. Recall is
 improved in v2 and re-measured on a fresh blind set, so this set is not reused for tuning.
+
+## v2: recall without giving up violation precision
+
+The blind v1 set was **not opened or run** during v2. Only the failure types reported from it were
+used, and the fixes are generic matching changes, not wording copied from it. New development
+clauses cl-091…125 (one or more per type, plus controls) were written and measured before any
+change; then a further 15 (cl-126…140, "blind batch 3") were written after the fixes and run once,
+mainly to stress the new, looser mechanisms.
+
+What changed, by failure type:
+
+1. **Labeled lists** ("الزواج: 3 أيام، وفاة …: 5 أيام"): plural `الإجازات`/`إجازات` count as leave
+   cues; paternity cues include `ولادة مولود`/`ولادة طفل`. Each number is judged in its own phrase
+   (anchors and claims are phrase-bounded), so a bereavement number never reaches marriage leave.
+2. **Employer notice**: more ways to name the employer as the party that notifies (`يلتزم الطرف
+   الأول`, `تلتزم الشركة بإخطار`, `على الشركة`, …). The indefinite-term condition and the
+   probation and non-monthly exceptions are unchanged; a worker's resignation notice still gives
+   nothing.
+3. **Non-compete**, 4. **loan instalments**, 8. **hajj leave**: a number introduced by an
+   explicit measure word in the topic's own phrase now counts as the rule's amount. Possessive
+   words (`مدتها`, `ومدتها`, `قدرها`, `نسبته`) refer back to the topic and count for every rule.
+   Open ones (`لمدة`, `بنسبة`) can qualify anything in the phrase, so they count only for
+   ceilings, where a misread number would have to exceed the limit to do harm. Loan rules also
+   accept `تستقطع`, `تقتطع`, `يسترد`.
+5. **Sick leave** "أجره كاملاً عن أول N يوماً": possessive full-pay phrases, and `أول` as a link word.
+6. **Hours**: exclusion words (`رمضان`, `مولود له`, carry-over, balance, …) now apply to the
+   **phrase** holding the number, not the whole clause, so a Ramadan sub-item no longer silences
+   the ordinary day. A rule claims a number from another rule only when its own cue is in the
+   same phrase and that rule does not exclude the number there. A number followed by the rule's
+   rate word ("٥٤ ساعة أسبوعياً") counts as the amount, so the weekly verdict no longer depends
+   on the daily one.
+7. **Probation**: a total stated *after* the number (`كحد أقصى`, `شاملة`, `بما في ذلك`) is a cap;
+   an extension of stated length adds up against 180 days.
+
+General changes that came with these: numbers in a phrase that names the topic are preferred
+over numbers elsewhere in the clause; the lead window for condition words grew from 25 to 40
+characters but stops at the start of the phrase; annual leave also skips numbers after
+`تأجيل` (postponement) and after `طلب`/`تقديم`/`استخدام` (a request, not the entitlement).
+
+| set | clauses | violation P / R | compliant P / R | review P / R | exact |
+|---|---|---|---|---|---|
+| cl-091…125 before v2 | 35 | 0.889 / 0.421 | 0.857 / 0.353 | 0.200 / 1.000 | 0.400 |
+| cl-091…125 after v2 | 35 | 1.000 / 1.000 | 1.000 / 1.000 | 1.000 / 1.000 | 1.000 |
+| cl-126…140, first run (blind batch 3) | 15 | **0.750** / 1.000 | 1.000 / 0.667 | 0.667 / 0.667 | 0.667 |
+| cl-001…090 after v2 (unchanged) | 90 | 1.000 / 1.000 | 1.000 / 0.941 | 0.846 / 1.000 | 0.967 |
+| all 140, recorded | 140 | **1.000 / 1.000** | 1.000 / 0.930 | 0.833 / 0.938 | 0.950 |
+
+The single false violation before v2 (cl-125, a carry-over with `لمدة`) was a latent v1 flaw. The
+single false violation in blind batch 3 (cl-126, `طلب الإجازة السنوية لمدة 5 أيام`) led to the
+request words above and the possessive/open split; it is disclosed here because that fix was
+informed by a blind clause. The other blind-3 misses (a bare `أسبوع`, a sick leave stated in
+months, a hajj clause with a condition word, a fixed-term non-renewal notice) are silence or
+"review needed" and were left as they are. As before, the recorded row is measured on clauses
+that shaped the code; the fresh blind v2 set is the real test.
