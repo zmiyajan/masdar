@@ -25,13 +25,13 @@ from masdar.domain.labor_rules import LABOR_RULES
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLAUSES = REPO_ROOT / "data" / "gold" / "clauses.v1.jsonl"
 
-# Recorded 2026-10-07 on 90 clauses (ADR-0010).
+# Recorded 2026-10-07 on 140 clauses (ADR-0010, v2).
 RECORDED = {
     FindingKind.VIOLATION: (1.0, 1.0),
-    FindingKind.COMPLIANT: (1.0, 0.9412),
-    FindingKind.REVIEW_NEEDED: (0.8462, 1.0),
+    FindingKind.COMPLIANT: (1.0, 0.9298),
+    FindingKind.REVIEW_NEEDED: (0.8333, 0.9375),
 }
-RECORDED_EXACT_ACCURACY = 0.9667
+RECORDED_EXACT_ACCURACY = 0.95
 TOLERANCE = 0.01
 
 
@@ -55,7 +55,7 @@ def test_labeled_set_is_well_formed(labeled: list[LabeledClause]) -> None:
     assert ids == [f"cl-{n:03d}" for n in range(1, len(ids) + 1)]
     known = {rule.rule_id for rule in LABOR_RULES}
     assert {rule for clause in labeled for rule, _ in clause.expected} <= known
-    assert len(labeled) == 90
+    assert len(labeled) == 140
     assert sum(1 for clause in labeled if not clause.expected) >= 10
 
 
