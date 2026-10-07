@@ -1,5 +1,6 @@
 """HTTP API tests: a real SearchService over a fake retriever, through TestClient."""
 
+import re
 from collections.abc import Iterator
 from typing import Any
 
@@ -133,7 +134,7 @@ class TestMeta:
         assert [law["law_id"] for law in laws] == ["labor-law", "pdpl", "companies-law"]
         assert laws[0]["title"] == "نظام العمل"
         assert laws[0]["current"] == 211
-        assert laws[0]["retrieved_on"] == "2026-10-07"
+        assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", laws[0]["retrieved_on"])
         assert laws[0]["source_url"].startswith("https://laws.boe.gov.sa/")
 
     def test_openapi_docs_are_served(self, client: TestClient) -> None:

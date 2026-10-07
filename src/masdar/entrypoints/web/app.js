@@ -93,8 +93,9 @@
     if (wordCount <= EXCERPT_WORDS * 1.3) return text;
     const first = Math.max(0, words.findIndex((w) => w.trim() && matches(w, stems)));
     const start = Math.max(0, first - EXCERPT_LEAD * 2);
-    const slice = words.slice(start, start + EXCERPT_WORDS * 2).join("").trim();
-    return `${start > 0 ? "… " : ""}${slice} …`;
+    const end = start + EXCERPT_WORDS * 2;
+    const slice = words.slice(start, end).join("").trim();
+    return `${start > 0 ? "… " : ""}${slice}${end < words.length ? " …" : ""}`;
   }
 
   // ------------------------------------------------------------------- rendering

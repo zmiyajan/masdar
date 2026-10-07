@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from masdar import __version__
 from masdar.app.search import SearchService
 from masdar.config import Settings
-from masdar.domain.errors import InvalidDomainObjectError
+from masdar.domain.errors import InvalidDomainObjectError, MasdarError
 from masdar.domain.search import MAX_QUERY_CHARS
 from masdar.entrypoints.laws import LawSummary, load_law_summaries
 from masdar.entrypoints.runtime import default_search_service
@@ -45,7 +45,7 @@ _ERRORS: dict[int | str, dict[str, Any]] = {
 }
 
 
-class _UnknownLawError(ValueError):
+class _UnknownLawError(MasdarError):
     """A ``law`` filter names a law that is not in the corpus."""
 
 
