@@ -1,6 +1,6 @@
 # ADR-0007: Semantic retrieval, hybrid fusion and reranking
 
-- **Status:** Accepted (the hybrid default will be revisited once the project's BM25 is measured)
+- **Status:** Accepted. The hybrid question was re-run with the real BM25; see "Re-check with the real BM25".
 - **Date:** 2026-10-07
 
 ## Context
@@ -105,6 +105,22 @@ does not change the decision: bge is over the budget on CPU by a factor of about
   The decision must be re-run with the project's real BM25 through the evaluation harness. If
   hybrid then wins, switching is one line in `container.py`.
 
+### Re-check with the real BM25 (`masdar eval`, [eval/RESULTS.md](../../eval/RESULTS.md))
+With the project's BM25 (light10, stopwords, contextual prefix; nDCG@10 0.796) the gap closes
+but does not reverse:
+
+| Pipeline | nDCG@10 | formal | dialect | paraphrase |
+|---|---|---|---|---|
+| `dense` | 0.862 | 0.904 | 0.796 | 0.798 |
+| `hybrid(bm25+dense)` | 0.850 | 0.891 | 0.730 | 0.847 |
+| `dense+rerank` | **0.932** | 0.959 | **0.923** | 0.853 |
+| `hybrid(bm25+dense)+rerank` | 0.925 | 0.959 | 0.869 | **0.873** |
+
+Fusion helps paraphrases (+0.02 to +0.05) and hurts dialect (−0.05 to −0.07), where BM25 is
+weakest. Overall the two reranked pipelines are within noise, so **`dense+rerank` is served**:
+one model fewer in the first stage and a simpler failure surface. `MASDAR_PIPELINE` switches it
+without code changes.
+
 ### Why RRF fuses ranks, not scores
 BM25 scores are unbounded sums of term weights whose scale changes with the query. Cosine
 similarities sit in a narrow band near the top (0.84–0.87 for the top six maternity hits).
@@ -153,8 +169,8 @@ models are covered by `@pytest.mark.slow` tests (`make test-slow`).
 - **The model choices were made on the same gold set that reports the results.** There is no
   held-out split, so the reported numbers are somewhat optimistic. Only coarse choices were
   made (model, text field, truncation), and no fusion weights were tuned.
-- **The hybrid verdict depends on a BM25 stand-in.** It must be re-checked with the real
-  adapter.
+- **The hybrid verdict was close.** With the real BM25 the reranked pipelines differ by 0.007,
+  well inside the noise; a larger gold set could reverse it.
 - **The small reranker can hurt individual paraphrases.** For "كم مدة إجازة الأمومة للموظفة؟"
   dense ranks `labor-law:151` first, and mmarco moves it to 7th: it does not link "الأمومة" to
   "وضع". bge-reranker-v2-m3 ranks it 2nd. The slow test only guards that the answer stays in

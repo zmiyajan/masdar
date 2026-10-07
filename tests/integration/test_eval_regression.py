@@ -13,7 +13,12 @@ from pathlib import Path
 import pytest
 
 from masdar.config import Settings
-from masdar.container import LEXICAL_PIPELINES, bm25_search_service, evaluate_use_case
+from masdar.container import (
+    LEXICAL_PIPELINES,
+    bm25_search_service,
+    evaluate_use_case,
+    search_service,
+)
 from masdar.domain.evaluation import EvaluationReport
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -56,3 +61,15 @@ def test_registered_names_are_the_pipeline_names(settings: Settings) -> None:
     assert {name: build(settings).name for name, build in LEXICAL_PIPELINES.items()} == {
         name: name for name in LEXICAL_PIPELINES
     }
+
+
+@pytest.mark.slow
+def test_served_pipeline_does_not_regress(settings: Settings, tmp_path: Path) -> None:
+    # CI has no models, so the semantic gate runs with `make test-slow`; it
+    # compares against the committed result of the pipeline users are served.
+    recorded = json.loads(
+        (REPO_ROOT / "eval" / "results" / "dense+rerank.json").read_text(encoding="utf-8")
+    )
+    served = search_service(settings.model_copy(update={"index_dir": tmp_path}), "dense+rerank")
+    current = evaluate_use_case(settings).run(served).overall.ndcg_at_10
+    assert current >= recorded["overall"]["ndcg_at_10"] - TOLERANCE

@@ -21,3 +21,16 @@ uses [Semantic Versioning](https://semver.org/).
 - `masdar dataset` CLI and `make dataset` / `make dataset-refresh`: BEIR corpus (534 current articles)
   plus `history.jsonl` (42 repealed or superseded), `stats.json` and a generated dataset card.
 - Golden tests on the real snapshots, plus an e2e CLI test.
+- Gold set v1: 82 HR and compliance questions (formal, dialect, paraphrase) with graded
+  judgments, exported as BEIR `queries.jsonl` and `qrels/test.tsv`.
+- Lexical retrieval: Arabic tokenizer with light10 stemming and stopwords, `Bm25Retriever` (ADR-0006).
+- Semantic retrieval: `DenseRetriever` (multilingual-e5-small, cached embeddings),
+  Reciprocal Rank Fusion and `HybridRetriever`, `CrossEncoderReranker` (ADR-0007).
+- Evaluation: Recall@k, MRR@10 and graded nDCG@10 at article level; `masdar eval` writes
+  `eval/results/*.json` and a generated `eval/RESULTS.md`; regression gates for BM25 (CI) and
+  the served pipeline (`make test-slow`); a test that keeps README numbers equal to the results.
+- One pipeline registry; `MASDAR_PIPELINE` selects what is served (default `dense+rerank`,
+  nDCG@10 0.932).
+- Interfaces: Arabic web UI, REST API (`/api/search`, `/api/laws`, `/api/health`) with CSP and
+  rate limiting, `masdar search`, and an MCP server (`search_regulations`, `get_article`).
+- Docker image for Hugging Face Spaces (non-root, CPU-only torch, models baked in) (ADR-0008).

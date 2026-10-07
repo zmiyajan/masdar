@@ -72,15 +72,24 @@ for display and citations, and a separate `normalized_text` used only for matchi
 | domain | `dataset.py` | Dataset report (counts per law and status) |
 | domain | `tokenize.py` | Arabic tokenizer, stopwords, light10 stemmer (ADR-0006) |
 | domain | `metrics.py`, `evaluation.py` | Recall@k, MRR@10, graded nDCG@10; per-style and per-law reports |
-| ports | `law_source.py`, `dataset_writer.py` | Where laws come from and where datasets go |
+| domain | `fusion.py` | Reciprocal Rank Fusion with optional weights (ADR-0007) |
+| domain | `gold.py`, `search.py` | Gold questions; collapse chunk hits to ranked articles |
+| ports | `law_source.py`, `dataset_writer.py`, `gold_source.py` | Where laws, gold questions come from and where datasets go |
+| ports | `retriever.py`, `reranker.py` | First-stage retrieval and second-stage reranking |
 | adapters | `boe/` | Catalog, polite HTTP client with gzip snapshots, read-only HTML parser |
 | adapters | `beir_writer.py` | BEIR `corpus.jsonl`, `stats.json`, generated dataset card |
 | adapters | `bm25.py` | `Bm25Retriever` (rank-bm25) with one analyzer for documents and queries |
+| adapters | `dense.py` | `DenseRetriever`: mE5-small, E5 prefixes, fingerprinted embedding cache |
+| adapters | `cross_encoder.py` | `CrossEncoderReranker`: mmarco-mMiniLMv2, pairs truncated to 256 tokens |
 | adapters | `eval_writer.py` | `eval/results/*.json`, generated `eval/RESULTS.md`, `eval/baseline.json` |
 | app | `build_dataset.py` | Load, resolve, validate integrity, write |
 | app | `evaluate.py` | Run a `SearchService` over the gold set and score articles |
+| app | `search.py`, `hybrid.py` | `SearchService` (retrieve, rerank, collapse, filter); `HybridRetriever` |
 | entrypoints | `cli.py` | `masdar dataset [--offline \| --refresh] [--laws ...]`, `masdar eval`, `masdar search` |
-| root | `config.py`, `container.py` | Validated settings and the composition root |
+| entrypoints | `api.py`, `security.py`, `schemas.py` | FastAPI: `/api/search`, `/api/laws`, `/api/health`; CSP, rate limit (ADR-0008) |
+| entrypoints | `web/` | Arabic-first RTL search page, no framework, no inline script |
+| entrypoints | `mcp_server.py` | MCP tools `search_regulations` and `get_article` for AI agents |
+| root | `config.py`, `container.py` | Validated settings; composition root with the pipeline registry (`MASDAR_PIPELINE`) |
 
 **Dataset flow:** `BoeClient` (snapshot or HTTP) → `parse_law_html` → `PublishedLaw` →
 `build_articles` (ordinals + amendments) → integrity check → `BeirDatasetWriter`.

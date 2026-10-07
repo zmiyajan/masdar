@@ -26,13 +26,13 @@ Labor Law, the Personal Data Protection Law (PDPL) and the Companies Law.
 |---|---|---|
 | Ingestion | Official HTML (هيئة الخبراء), committed gzip snapshots, Arabic ordinal headings to numbers | ✅ |
 | Amendments | Versioned articles: text in force derived from decree-dated notes, with a status per article | ✅ |
-| Normalization | Rule-based Arabic normalizer (NFKC, diacritics, alef/yaa/taa folding, digits) | ✅ built (defaults to be tuned by ablation) |
+| Normalization | Rule-based Arabic normalizer (NFKC, diacritics, alef/yaa/taa folding, digits) | ✅ |
 | Chunking | Structure-aware (paragraph boundaries) + contextual prefix (law/part/chapter) | ✅ |
-| Lexical retrieval | BM25 + Arabic light stemming | planned |
-| Dense retrieval | Multilingual E5 embeddings, local | planned |
-| Fusion and reranking | Reciprocal Rank Fusion + cross-encoder reranker | planned |
-| Evaluation | Recall@k, MRR, nDCG@10 on a versioned gold set; regression gate | planned |
-| Interfaces | REST API, CLI, **MCP server** (`search_regulations` tool for AI agents) | planned |
+| Lexical retrieval | BM25 + Arabic light stemming (light10) and stopwords | ✅ |
+| Dense retrieval | `multilingual-e5-small`, local, cached embeddings | ✅ |
+| Fusion and reranking | Reciprocal Rank Fusion; cross-encoder reranker (`mmarco-mMiniLMv2`) | ✅ |
+| Evaluation | Recall@k, MRR, graded nDCG@10 on a versioned gold set; regression gate | ✅ |
+| Interfaces | Arabic web UI, REST API, CLI, **MCP server** (`search_regulations`, `get_article`) | ✅ |
 
 Each technique is tied to its paper in [docs/RESEARCH.md](docs/RESEARCH.md).
 
@@ -48,18 +48,51 @@ generated [dataset card](data/dataset/DATASET_CARD.md).
 | نظام حماية البيانات الشخصية (PDPL) | 43 | 42 | 12 | 11 | 1 |
 | نظام الشركات (Companies Law) | 281 | 281 | 0 | 0 | 0 |
 
-Queries and relevance judgments (HR and compliance questions) are the next release.
+It ships with **82 hand-written HR and compliance questions** and graded relevance judgments
+(2 = answers, 1 = related) in three styles: 50 formal, 17 Saudi dialect, and 15 paraphrases that
+avoid the law's own wording (for example "الأوفرتايم").
 
 ## Results
-Retrieval numbers will be published here as each retrieval stage lands. The table is filled
-in only from `make eval` output.
+nDCG@10, Recall@10 and MRR@10 at article level on the 82 gold questions. Every number below
+comes from `eval/results/*.json` (written by `make eval`), and a test fails if this table and
+those files ever disagree. The full breakdown by style and by law is in
+[eval/RESULTS.md](eval/RESULTS.md).
+
+| Pipeline | nDCG@10 | Recall@10 | MRR@10 | Dialect nDCG@10 |
+|---|---|---|---|---|
+| `bm25-raw` | 0.578 | 0.701 | 0.565 | 0.341 |
+| `bm25` | 0.796 | 0.890 | 0.792 | 0.644 |
+| `dense` | 0.862 | 0.957 | 0.868 | 0.796 |
+| `hybrid(bm25+dense)` | 0.850 | 0.921 | 0.847 | 0.730 |
+| `hybrid(bm25+dense)+rerank` | 0.925 | 0.970 | 0.930 | 0.869 |
+| **`dense+rerank`** (served) | **0.932** | **0.970** | **0.935** | **0.923** |
+
+- **Arabic-aware lexical search matters.** Normalization, the contextual prefix and light10
+  stemming take BM25 from 0.578 to 0.796 ([ADR-0006](docs/decisions/0006-lexical-retrieval-and-evaluation.md)).
+- **Meaning beats words for dialect.** Dense retrieval lifts dialect questions from 0.644 to
+  0.796, and the cross-encoder takes them to 0.923.
+- **Fusion did not pay here.** Hybrid + rerank (0.925) is within noise of dense + rerank, so
+  the simpler pipeline is served ([ADR-0007](docs/decisions/0007-semantic-retrieval-hybrid-and-reranking.md)).
+- **Read with care.** One annotator and 82 questions: differences below about 0.02 are noise,
+  and models were chosen on this same set, so the absolute numbers are somewhat optimistic.
 
 ## Quickstart
 ```bash
-make setup     # install dependencies (uv) and git hooks
+make setup     # install dependencies, including the local models' extra, and git hooks
+make serve     # web UI and API on http://localhost:8000 (first start downloads two ~0.47 GB models)
+uv run masdar search "كم مدة إجازة الأمومة؟"
+make eval      # score every pipeline on the gold set -> eval/RESULTS.md
 make check     # lint, types, architecture rules, tests
 make dataset   # rebuild the corpus offline from committed snapshots (byte-identical)
 ```
+
+`MASDAR_PIPELINE=bm25` serves the lexical pipeline with no model download.
+
+### Use it from an AI agent (MCP)
+`make mcp` starts a stdio MCP server with two read-only tools: `search_regulations`
+(question → ranked, cited articles with their status) and `get_article` (full text in force and
+amendment history). Any MCP client, such as Claude Desktop, can launch it with
+`uv run --directory /path/to/masdar masdar-mcp`.
 
 ## Engineering
 - **Architecture:** ports and adapters. The domain is pure Python, and the boundaries are
