@@ -24,6 +24,10 @@ class Settings(BaseSettings):
             at least 10 seconds, so lower values are rejected.
         http_timeout_seconds: Timeout for one portal request.
         user_agent: Identifies Masdar to the portal.
+        eval_dir: Where ``masdar eval`` writes results, ``RESULTS.md`` and the baseline.
+        index_dir: Cache of corpus embeddings (gitignored, safe to delete).
+        pipeline: The search pipeline the CLI, API and MCP server serve; one of
+            ``masdar.container.PIPELINES``. ``bm25`` runs without the ``ml`` extra.
     """
 
     model_config = SettingsConfigDict(env_prefix="MASDAR_", env_file=".env", extra="ignore")
@@ -36,3 +40,6 @@ class Settings(BaseSettings):
     )
     http_timeout_seconds: float = Field(default=30.0, gt=0)
     user_agent: str = "masdar/0.1 (Arabic legal retrieval research)"
+    eval_dir: Path = Path("eval")
+    index_dir: Path = Path("data/index")
+    pipeline: str = "dense+rerank"

@@ -21,10 +21,10 @@ from fastapi.staticfiles import StaticFiles
 from masdar import __version__
 from masdar.app.search import SearchService
 from masdar.config import Settings
+from masdar.container import default_search_service
 from masdar.domain.errors import InvalidDomainObjectError, MasdarError
 from masdar.domain.search import MAX_QUERY_CHARS
 from masdar.entrypoints.laws import LawSummary, load_law_summaries
-from masdar.entrypoints.runtime import default_search_service
 from masdar.entrypoints.schemas import (
     ErrorBody,
     ErrorResponse,

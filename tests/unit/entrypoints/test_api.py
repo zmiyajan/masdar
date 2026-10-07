@@ -7,13 +7,12 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-import masdar.container
 from entrypoints.entrypoint_fakes import FakeRetriever
 from masdar.app.search import SearchService
 from masdar.config import Settings
 from masdar.domain.search import MAX_QUERY_CHARS
+from masdar.entrypoints import api
 from masdar.entrypoints.api import create_app
-from masdar.entrypoints.runtime import ServiceUnavailableError
 from masdar.entrypoints.security import RateLimiter
 
 
@@ -210,18 +209,8 @@ class TestDefaultService:
             calls.append(given)
             return service
 
-        monkeypatch.setattr(masdar.container, "default_search_service", factory, raising=False)
+        monkeypatch.setattr(api, "default_search_service", factory)
         with TestClient(create_app(settings=settings)) as client:
             client.get("/api/health")
             client.get("/api/health")
         assert calls == [settings]  # once per process, not per request
-
-    def test_missing_factory_fails_startup_clearly(
-        self, settings: Settings, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.delattr(masdar.container, "default_search_service", raising=False)
-        with (
-            pytest.raises(ServiceUnavailableError, match="default_search_service"),
-            TestClient(create_app(settings=settings)),
-        ):
-            pass

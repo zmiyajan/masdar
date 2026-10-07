@@ -4,10 +4,11 @@ Keeping all construction here means use cases never know which concrete
 adapters they run with, and tests can wire fakes the same way.
 """
 
+import importlib.util
 import ssl
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
-from functools import partial
+from functools import cache, partial
 from pathlib import Path
 
 import httpx
@@ -17,15 +18,19 @@ from masdar.adapters.beir_writer import BeirDatasetWriter
 from masdar.adapters.bm25 import Bm25Retriever, arabic_analyzer, display_text, whitespace_analyzer
 from masdar.adapters.boe.client import BoeClient
 from masdar.adapters.boe.source import BoeLawSource
+from masdar.adapters.cross_encoder import DEFAULT_RERANK_CANDIDATES, CrossEncoderReranker
+from masdar.adapters.dense import DenseRetriever
 from masdar.adapters.eval_writer import EvalResultsWriter
 from masdar.adapters.gold_jsonl import JsonlGoldSource
 from masdar.app.build_dataset import BuildDataset
 from masdar.app.corpus import Corpus, load_corpus
 from masdar.app.evaluate import Evaluate
+from masdar.app.hybrid import HybridRetriever
 from masdar.app.search import SearchService
-from masdar.config import Settings
+from masdar.config import ROBOTS_CRAWL_DELAY_SECONDS, Settings
 from masdar.domain.arabic import ArabicNormalizer
 from masdar.domain.chunking import ChunkingOptions
+from masdar.domain.errors import MasdarError
 from masdar.domain.tokenize import ArabicTokenizer, TokenizerOptions
 
 
@@ -76,18 +81,20 @@ def load_current_corpus(settings: Settings, *, chunking: ChunkingOptions | None 
         chunking: Chunking parameters; defaults to `ChunkingOptions()`. The
             evaluation passes other options to measure their effect.
     """
+    return _corpus(settings.snapshot_dir, chunking or ChunkingOptions())
+
+
+@cache
+def _corpus(snapshot_dir: Path, chunking: ChunkingOptions) -> Corpus:
+    # Memoized: the corpus is immutable and every pipeline, the MCP server and
+    # the evaluation need it, so parsing the snapshots once per process is enough.
     with httpx.Client() as http:
-        client = BoeClient(
-            http, settings.snapshot_dir, crawl_delay=settings.crawl_delay_seconds, offline=True
-        )
-        source = BoeLawSource(client, settings.snapshot_dir)
-        return load_corpus(source, ArabicNormalizer(), chunking or ChunkingOptions())
+        client = BoeClient(http, snapshot_dir, crawl_delay=ROBOTS_CRAWL_DELAY_SECONDS, offline=True)
+        source = BoeLawSource(client, snapshot_dir)
+        return load_corpus(source, ArabicNormalizer(), chunking)
 
 
 # ----------------------------------------------------------------- search pipelines
-
-EVAL_DIR = Path("eval")
-"""Where ``masdar eval`` writes results; relative to the working directory."""
 
 
 def bm25_search_service(
@@ -104,14 +111,21 @@ def bm25_search_service(
         context: Index each chunk with its law/part/chapter/heading prefix.
         stopwords: Drop Arabic function words before stemming.
     """
+    return SearchService(
+        _bm25_retriever(settings, stemming=stemming, context=context, stopwords=stopwords)
+    )
+
+
+def _bm25_retriever(
+    settings: Settings, *, stemming: bool = True, context: bool = True, stopwords: bool = True
+) -> Bm25Retriever:
     corpus = load_current_corpus(settings, chunking=ChunkingOptions(include_context=context))
     tokenizer = ArabicTokenizer(TokenizerOptions(stopwords=stopwords, stemming=stemming))
-    retriever = Bm25Retriever(
+    return Bm25Retriever(
         corpus.chunks,
         name=_bm25_name(stemming=stemming, context=context, stopwords=stopwords),
         analyzer=arabic_analyzer(tokenizer=tokenizer),
     )
-    return SearchService(retriever)
 
 
 def bm25_raw_search_service(settings: Settings) -> SearchService:
@@ -138,16 +152,76 @@ LEXICAL_PIPELINES: Mapping[str, Callable[[Settings], SearchService]] = {
     "bm25-keep-stopwords": partial(bm25_search_service, stopwords=False),
     "bm25": bm25_search_service,
 }
-"""The lexical ablation, weakest to strongest; ``masdar eval`` runs these by name."""
+"""The lexical ablation, weakest to strongest. Needs no ML dependencies."""
+
+
+def dense_search_service(
+    settings: Settings, *, hybrid: bool = False, rerank: bool = False
+) -> SearchService:
+    """A semantic pipeline: mE5 dense retrieval, optionally fused and reranked (ADR-0007).
+
+    Args:
+        settings: Validated application settings.
+        hybrid: Fuse dense with the best BM25 pipeline by reciprocal rank fusion.
+        rerank: Reorder the top candidates with the cross-encoder.
+
+    Raises:
+        MasdarError: If the ``ml`` extra (sentence-transformers) is not installed.
+    """
+    if importlib.util.find_spec("sentence_transformers") is None:
+        raise MasdarError(
+            "semantic pipelines need the ml extra: run `uv sync --extra ml`, "
+            "or set MASDAR_PIPELINE=bm25"
+        )
+    corpus = load_current_corpus(settings)
+    retriever: DenseRetriever | HybridRetriever = DenseRetriever.from_chunks(
+        corpus.chunks, cache_dir=settings.index_dir
+    )
+    if hybrid:
+        retriever = HybridRetriever([_bm25_retriever(settings), retriever])
+    if not rerank:
+        return SearchService(retriever)
+    return SearchService(
+        retriever, CrossEncoderReranker.from_model(), candidates=DEFAULT_RERANK_CANDIDATES
+    )
+
+
+SEMANTIC_PIPELINES: Mapping[str, Callable[[Settings], SearchService]] = {
+    "dense": dense_search_service,
+    "hybrid(bm25+dense)": partial(dense_search_service, hybrid=True),
+    "dense+rerank": partial(dense_search_service, rerank=True),
+    "hybrid(bm25+dense)+rerank": partial(dense_search_service, hybrid=True, rerank=True),
+}
+"""Dense, fused and reranked pipelines. Need the ``ml`` extra."""
+
+PIPELINES: Mapping[str, Callable[[Settings], SearchService]] = {
+    **LEXICAL_PIPELINES,
+    **SEMANTIC_PIPELINES,
+}
+"""Every pipeline by name, weakest to strongest; each name equals its `SearchService.name`."""
+
+
+def search_service(settings: Settings, name: str) -> SearchService:
+    """Build the pipeline registered as ``name``.
+
+    Raises:
+        MasdarError: If no pipeline has that name.
+    """
+    try:
+        build = PIPELINES[name]
+    except KeyError:
+        raise MasdarError(f"unknown pipeline {name!r}; choose one of {list(PIPELINES)}") from None
+    return build(settings)
 
 
 def default_search_service(settings: Settings | None = None) -> SearchService:
-    """The pipeline the API, the CLI and the MCP server serve.
+    """The pipeline the API, the CLI and the MCP server serve (``Settings.pipeline``).
 
     Args:
         settings: Defaults to `Settings()` read from the environment.
     """
-    return bm25_search_service(settings or Settings())
+    settings = settings or Settings()
+    return search_service(settings, settings.pipeline)
 
 
 def evaluate_use_case(settings: Settings) -> Evaluate:
@@ -155,6 +229,6 @@ def evaluate_use_case(settings: Settings) -> Evaluate:
     return Evaluate(JsonlGoldSource(settings.gold_path))
 
 
-def eval_results_writer(eval_dir: Path = EVAL_DIR) -> EvalResultsWriter:
+def eval_results_writer(eval_dir: Path) -> EvalResultsWriter:
     """Writes ``results/*.json``, ``RESULTS.md`` and ``baseline.json`` under ``eval_dir``."""
     return EvalResultsWriter(eval_dir)

@@ -38,7 +38,18 @@ masdar-mcp = "masdar.entrypoints.mcp_server:main"
 [project.optional-dependencies]
 ml = [
     "sentence-transformers>=3.3",
+    # Listed directly so the source below applies: on Linux (the Docker image),
+    # the CPU-only wheel avoids gigabytes of CUDA libraries a Space never uses.
+    "torch>=2.4",
 ]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
 
 [dependency-groups]
 dev = [

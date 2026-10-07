@@ -13,11 +13,10 @@ from mcp.types import ToolAnnotations
 
 from masdar.app.search import SearchService
 from masdar.config import Settings
-from masdar.container import load_current_corpus
+from masdar.container import default_search_service, load_current_corpus
 from masdar.domain.errors import InvalidDomainObjectError
 from masdar.domain.models import Article
 from masdar.entrypoints.laws import load_law_summaries
-from masdar.entrypoints.runtime import default_search_service
 from masdar.entrypoints.schemas import ArticleDetail, SearchResponse, to_detail, to_hit
 
 MAX_K = 20

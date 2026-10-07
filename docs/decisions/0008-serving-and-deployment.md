@@ -21,8 +21,8 @@ browser.
   would drift from the measured one without anyone noticing.
 - The service is built **once**, in the app's lifespan (in a worker thread, since indexing is
   CPU-bound), never per request.
-- Until the container's `default_search_service` lands, `entrypoints/runtime.py` resolves it at
-  call time and fails start-up with a clear `ServiceUnavailableError` if it is missing.
+- Which pipeline is served is one setting, `MASDAR_PIPELINE` (default `dense+rerank`), resolved
+  by `container.default_search_service`; an unknown name fails start-up with the valid names.
 
 ### No frontend framework
 The UI is three static files (`index.html`, `app.js`, `styles.css`), served by the same process,

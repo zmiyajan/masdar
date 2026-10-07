@@ -9,7 +9,7 @@ import sys
 import time
 
 from masdar.config import Settings
-from masdar.entrypoints.runtime import default_search_service
+from masdar.container import default_search_service
 
 _WARMUP_QUESTION = "كم مدة إجازة الأمومة؟"
 

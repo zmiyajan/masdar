@@ -12,6 +12,8 @@ from masdar.entrypoints.cli import main
 def env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, snapshot_dir: Path) -> Path:
     monkeypatch.setenv("MASDAR_SNAPSHOT_DIR", str(snapshot_dir))
     monkeypatch.setenv("MASDAR_DATASET_DIR", str(tmp_path))
+    # The lexical pipeline: deterministic, model-free, and fast enough for e2e.
+    monkeypatch.setenv("MASDAR_PIPELINE", "bm25")
     return tmp_path
 
 

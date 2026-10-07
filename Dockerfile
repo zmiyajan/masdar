@@ -51,9 +51,9 @@ USER user
 
 # Warm-up: download model weights and build any on-disk index now, as the
 # runtime user, so they ship inside the image and the first visitor does not
-# wait. "|| true" keeps an offline or model-less build usable: the app then
-# warms up on first start instead.
-RUN python -m masdar.entrypoints.warmup || true
+# wait. A failure here fails the build: an image that cannot answer a query
+# should never ship.
+RUN python -m masdar.entrypoints.warmup
 
 EXPOSE 7860
 

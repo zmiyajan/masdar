@@ -2,7 +2,7 @@
 
 Commands:
     ``masdar dataset [--offline] [--refresh] [--laws ...]``: build the dataset.
-    ``masdar eval [--pipeline NAME ...] [--update-baseline]``: measure pipelines.
+    ``masdar eval [--pipeline NAME ...] [--lexical] [--update-baseline]``: measure pipelines.
     ``masdar search "سؤال" [-k N]``: print ranked citations.
 
 This module only parses arguments, calls a use case and prints the result. It
@@ -18,12 +18,13 @@ from pydantic import ValidationError
 
 from masdar.config import Settings
 from masdar.container import (
-    EVAL_DIR,
     LEXICAL_PIPELINES,
+    PIPELINES,
     dataset_builder,
     default_search_service,
     eval_results_writer,
     evaluate_use_case,
+    search_service,
 )
 from masdar.domain.dataset import DatasetReport
 from masdar.domain.errors import MasdarError
@@ -60,12 +61,13 @@ def _dataset(args: argparse.Namespace, settings: Settings) -> str:
 
 
 def _eval(args: argparse.Namespace, settings: Settings) -> str:
-    names = list(dict.fromkeys(args.pipeline or LEXICAL_PIPELINES))
+    default = LEXICAL_PIPELINES if args.lexical else PIPELINES
+    names = list(dict.fromkeys(args.pipeline or default))
     if args.update_baseline and _BASELINE_PIPELINE not in names:
         raise MasdarError(f"--update-baseline needs the {_BASELINE_PIPELINE!r} pipeline")
     evaluate = evaluate_use_case(settings)
-    reports = [evaluate.run(LEXICAL_PIPELINES[name](settings)) for name in names]
-    writer = eval_results_writer(args.out)
+    reports = [evaluate.run(search_service(settings, name)) for name in names]
+    writer = eval_results_writer(args.out or settings.eval_dir)
     written = writer.write(reports)
     lines = [_eval_table(reports), "", *(f"wrote {path}" for path in written)]
     lines.append(f"wrote {writer.summary_path}")
@@ -104,12 +106,15 @@ def _parser() -> argparse.ArgumentParser:
     evaluate.add_argument(
         "--pipeline",
         nargs="+",
-        choices=list(LEXICAL_PIPELINES),
+        choices=list(PIPELINES),
         metavar="NAME",
-        help=f"pipelines to evaluate (default: all of {', '.join(LEXICAL_PIPELINES)})",
+        help=f"pipelines to evaluate (default: all of {', '.join(PIPELINES)})",
     )
     evaluate.add_argument(
-        "--out", type=Path, default=EVAL_DIR, help=f"output directory (default: {EVAL_DIR})"
+        "--lexical", action="store_true", help="only the BM25 pipelines (no ml extra needed)"
+    )
+    evaluate.add_argument(
+        "--out", type=Path, help="output directory (default: MASDAR_EVAL_DIR, else eval/)"
     )
     evaluate.add_argument(
         "--update-baseline",
