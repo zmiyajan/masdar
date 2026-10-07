@@ -177,3 +177,22 @@ scores within 0.01 of the recorded row.
   number in the article and compare units themselves. Kept as the always-on half of the report.
 - **Hard-code limits from the published law:** simple, but the published text is outdated for
   these very articles. Rejected in favour of pinning to the resolved text in force.
+
+## Blind measurement (v1)
+
+`data/gold/clauses.blind.v1.jsonl` holds 40 clauses written by a separate author who saw neither
+the code nor the development clauses, only the limits in force. Measured once, before any change
+was made because of it:
+
+| Verdict | Precision | Recall |
+|---|---|---|
+| violation | **1.00** (5/5) | 0.33 (5/15) |
+| compliant | 1.00 (13/13) | 0.76 (13/17) |
+| review_needed | 0.55 (6/11) | 0.75 (6/8) |
+
+Exact-clause accuracy 0.625. **The checker never called a compliant clause a violation**, which is
+the property a compliance tool must have. It missed two thirds of the violations, though: clauses
+worded differently from the hand-written cues (bullet lists such as "الزواج: 3 أيام", "عدم منافسة
+الشركة … لمدة ثلاث سنوات", loan instalments "تُستقطع … بنسبة 25%") fell to silence or "review needed".
+The development numbers above overstate quality; this row is the honest estimate for v1. Recall is
+improved in v2 and re-measured on a fresh blind set, so this set is not reused for tuning.

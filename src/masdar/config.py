@@ -43,7 +43,10 @@ class Settings(BaseSettings):
     gold_path: Path = Path("data/gold/queries.v1.jsonl")
     out_of_scope_path: Path = Path("data/gold/out_of_scope.v1.jsonl")
     clause_sets: dict[str, Path] = Field(
-        default_factory=lambda: {"development": Path("data/gold/clauses.v1.jsonl")}
+        default_factory=lambda: {
+            "development": Path("data/gold/clauses.v1.jsonl"),
+            "blind-v1": Path("data/gold/clauses.blind.v1.jsonl"),
+        }
     )
     crawl_delay_seconds: float = Field(
         default=ROBOTS_CRAWL_DELAY_SECONDS, ge=ROBOTS_CRAWL_DELAY_SECONDS
