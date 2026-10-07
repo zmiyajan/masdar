@@ -36,6 +36,15 @@ Latency grows linearly with this number. 20 candidates lost 0.05 nDCG@10 on the
 gold set; 30 keeps the 2-thread CPU median near 0.6 s with the default model.
 """
 
+DEFAULT_ANSWER_THRESHOLD = -0.75
+"""Minimum answer score for `AnswerService` with the default model and revision.
+
+The answer score is a sum of two raw logits of this cross-encoder, so the value
+means nothing for another model or revision. It is the midpoint of the two
+thresholds chosen by 2-fold cross-validation on the gold and out-of-scope
+questions (-1.13 and -0.37); see ADR-0009.
+"""
+
 MAX_PAIR_TOKENS = 256
 """Truncation length in tokens for one (question, chunk) pair.
 

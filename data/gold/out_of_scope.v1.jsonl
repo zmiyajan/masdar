@@ -1,0 +1,32 @@
+{"_id": "oos-001", "text": "ما الحد الأقصى للسرعة على الطرق السريعة في المملكة؟", "topic": "traffic", "style": "formal"}
+{"_id": "oos-002", "text": "كم غرامة قطع الإشارة الحمراء؟", "topic": "traffic", "style": "dialect"}
+{"_id": "oos-003", "text": "هل يجوز تجديد رخصة القيادة مع وجود مخالفات مرورية غير مسددة؟", "topic": "traffic", "style": "formal"}
+{"_id": "oos-004", "text": "كم مدة الإجازة الاعتيادية للموظف الحكومي في نظام الخدمة المدنية؟", "topic": "civil-service", "style": "formal"}
+{"_id": "oos-005", "text": "متى تنزل العلاوة السنوية لموظفين الحكومة؟", "topic": "civil-service", "style": "dialect"}
+{"_id": "oos-006", "text": "ما شروط التعيين على الوظائف العامة في الجهات الحكومية؟", "topic": "civil-service", "style": "formal"}
+{"_id": "oos-007", "text": "كم نسبة اشتراك التأمينات الاجتماعية اللي تنخصم من راتب الموظف السعودي؟", "topic": "social-insurance", "style": "dialect"}
+{"_id": "oos-008", "text": "متى يستحق المشترك معاش التقاعد المبكر من المؤسسة العامة للتأمينات الاجتماعية؟", "topic": "social-insurance", "style": "formal"}
+{"_id": "oos-009", "text": "كم يصرف ساند للموظف اللي انفصل من شغله؟", "topic": "social-insurance", "style": "dialect"}
+{"_id": "oos-010", "text": "كم نسبة ضريبة القيمة المضافة في المملكة؟", "topic": "vat", "style": "formal"}
+{"_id": "oos-011", "text": "متى يلزم تسجيل المنشأة في ضريبة القيمة المضافة؟", "topic": "vat", "style": "formal"}
+{"_id": "oos-012", "text": "هل الأكل اللي أشتريه من البقالة عليه ضريبة؟", "topic": "vat", "style": "dialect"}
+{"_id": "oos-013", "text": "هل يحق للمؤجر زيادة الإيجار قبل انتهاء عقد السكن؟", "topic": "rental", "style": "formal"}
+{"_id": "oos-014", "text": "صاحب الشقة يبي يطلعني قبل نهاية العقد، وش أسوي؟", "topic": "rental", "style": "dialect"}
+{"_id": "oos-015", "text": "لمن تكون حضانة الأطفال بعد الطلاق؟", "topic": "personal-status", "style": "formal"}
+{"_id": "oos-016", "text": "كيف أطلع تأشيرة زيارة عائلية لأهلي؟", "topic": "immigration", "style": "dialect"}
+{"_id": "oos-017", "text": "ما عقوبة الدخول غير المشروع إلى حساب إلكتروني لشخص آخر؟", "topic": "cybercrime", "style": "formal"}
+{"_id": "oos-018", "text": "كيف أسجل علامة تجارية لشركتي؟", "topic": "trademarks", "style": "dialect"}
+{"_id": "oos-019", "text": "ما عاصمة المملكة العربية السعودية؟", "topic": "general-knowledge", "style": "formal"}
+{"_id": "oos-020", "text": "كم عدد أيام السنة الهجرية؟", "topic": "general-knowledge", "style": "formal"}
+{"_id": "oos-021", "text": "وش أحسن طريقة أطبخ فيها الكبسة؟", "topic": "general-knowledge", "style": "dialect"}
+{"_id": "oos-022", "text": "كم درجة الحرارة في الرياض بالصيف؟", "topic": "general-knowledge", "style": "dialect"}
+{"_id": "oos-023", "text": "هل يحق للموظف أن يعمل عن بعد من منزله؟", "topic": "near-miss-labor", "style": "formal"}
+{"_id": "oos-024", "text": "كم بدل السكن اللي لازم تعطيني الشركة؟", "topic": "near-miss-labor", "style": "dialect"}
+{"_id": "oos-025", "text": "هل يلزم صاحب العمل بتوفير تذكرة سفر سنوية للعامل السعودي؟", "topic": "near-miss-labor", "style": "formal"}
+{"_id": "oos-026", "text": "كم مدة إجازة الأمومة للموظفة الحكومية في نظام الخدمة المدنية؟", "topic": "near-miss-labor", "style": "formal"}
+{"_id": "oos-027", "text": "هل يجوز للبنك أن يرفض فتح حساب لعميل بسبب عمره؟", "topic": "near-miss-pdpl", "style": "formal"}
+{"_id": "oos-028", "text": "كم مدة الاحتفاظ بتسجيلات كاميرات المراقبة في المحلات التجارية؟", "topic": "near-miss-pdpl", "style": "formal"}
+{"_id": "oos-029", "text": "وش شروط ترخيص متجر إلكتروني يبيع أونلاين؟", "topic": "near-miss-pdpl", "style": "dialect"}
+{"_id": "oos-030", "text": "هل تحتاج المؤسسة الفردية لعقد تأسيس عند تسجيلها؟", "topic": "near-miss-companies", "style": "formal"}
+{"_id": "oos-031", "text": "كم رسوم إصدار السجل التجاري للمؤسسة؟", "topic": "near-miss-companies", "style": "dialect"}
+{"_id": "oos-032", "text": "كيف أحسب زكاة الأسهم اللي عندي في محفظتي؟", "topic": "near-miss-companies", "style": "dialect"}
