@@ -181,6 +181,40 @@ def test_clause_query_fits_the_search_limit() -> None:
             {"loan-deduction-max": (R, ReviewReason.POSSIBLE_EXCEPTION)},
         ),
         ("يتقاضى الموظف بدل سكن 25% من الراتب الأساسي.", {}),
+        # v2: labeled lists, each item on its own topic
+        (
+            "الإجازات: الزواج: يومان، وفاة الأخ: ثلاثة أيام، ولادة طفل: 3 أيام.",
+            {"marriage-leave-min": (V, None), "paternity-leave-min": (C, None)},
+        ),
+        # v2: phrase-scoped exclusion; the ordinary day survives a Ramadan sub-item
+        (
+            "1- ساعات العمل 9.5 ساعة يومياً.\n2- وفي رمضان ست ساعات يومياً.",
+            {"daily-hours-max": (V, None), "ramadan-daily-hours-max": (C, None)},
+        ),
+        # v2: a rate word ties the weekly total on its own
+        (
+            "يعمل الموظف تسع ساعات يومياً و54 ساعة أسبوعياً.",
+            {
+                "daily-hours-max": (R, ReviewReason.POSSIBLE_EXCEPTION),
+                "weekly-hours-max": (V, None),
+            },
+        ),
+        # v2: an open measure word is enough for a ceiling, not for a floor
+        ("يلتزم بعدم منافسة الشركة في الرياض لمدة 3 سنوات.", {"non-compete-max": (V, None)}),
+        ("تمنح إجازة للحج لمرة واحدة ومدتها 6 أيام.", {"hajj-leave-min": (V, None)}),
+        (
+            "تمنح إجازة للحج لمرة واحدة عند الطلب لمدة 6 أيام.",
+            {"hajj-leave-min": (R, ReviewReason.UNCLEAR_ROLE)},
+        ),
+        # v2: a cap stated after the number; an extension of stated length adds up
+        ("فترة التجربة 170 يوماً كحد أقصى شاملة التمديد.", {"probation-max": (C, None)}),
+        ("التجربة 100 يوم قابلة للتمديد لمدة 100 يوم.", {"probation-max": (V, None)}),
+        # v2: employer named as the first party, monthly indefinite contract
+        (
+            "العقد غير محدد المدة براتب شهري، ويلتزم الطرف الأول بإشعار الموظف قبل 40 يوماً.",
+            {"notice-employer-min": (V, None)},
+        ),
+        ("يجوز ترحيل الإجازة السنوية لمدة 10 أيام.", {}),
         # a violation needs the number to read as the amount the rule is about
         (
             "تحتسب الإجازة السنوية بواقع 1.75 يوم.",

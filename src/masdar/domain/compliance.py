@@ -89,7 +89,7 @@ CUE_WINDOW = 80
 # How far after a quantity a rate word ("يومياً") may appear.
 RATE_WINDOW = 30
 # How far before a quantity a qualifier ("بعد مرور", "لا يتجاوز") may appear.
-LEAD_WINDOW = 25
+LEAD_WINDOW = 40
 
 _CAP_PHRASES = (
     "لا يتجاوز",
@@ -106,6 +106,17 @@ _CAP_PHRASES = (
     "مجموعها",
     "إجمالي",
 )
+# A total stated after the number: "180 يوماً كحد أقصى شاملة أي تمديد".
+_CAP_AFTER_PHRASES = (
+    "كحد أقصى",
+    "حداً أقصى",
+    "بحد أقصى",
+    "حد أقصى",
+    "شاملة",
+    "شاملاً",
+    "بما في ذلك",
+    "بما فيها",
+)
 _EXTENSION_PHRASES = ("تمديد", "تمديدها", "التمديد", "يمدد", "تمدد", "تجديدها", "التجديد")
 _SAME_LENGTH_PHRASES = ("مماثلة", "مماثله")
 # Commas and sentence ends, but not the point in "7.5".
@@ -116,9 +127,21 @@ _LINK_LINES = (
     "مدتها مدته مدة لمدة بمدة قدرها قدره تبلغ يبلغ تكون يكون هي هو",
     "مدفوعة الأجر بأجر بالأجر أجر كامل كاملاً كاملة براتب الراتب بالكامل",
     "قبل كتابي كتابياً كتابة خطي خطياً لا تقل يقل عن تزيد يزيد على",
-    "من ما نسبته نسبة بنسبة راتب راتبه الشهري الأساسي",
+    "من ما نسبته نسبة بنسبة راتب راتبه الشهري الأساسي أول",
     "الموظف العامل الموظفة العاملة للموظف للعامل للموظفة للعاملة",
     "الشركة المنشأة صاحب العمل الطرف الآخر الطرفين للطرف الأول الثاني لصاحب للشركة للمنشأة",
+)
+# Words that introduce a measure explicitly. The possessive ones ("مدتها":
+# its duration) refer back to the topic just named; the open ones ("لمدة": for
+# a period of) can qualify anything in the phrase ("طلب الإجازة لمدة 5 أيام"
+# is a request, not the entitlement), so only ceilings accept them, where a
+# misread number would have to be larger than the limit to do harm.
+_OWN_MEASURE_WORDS = frozenset(
+    normalize_arabic(word)
+    for word in ("مدتها", "مدته", "ومدتها", "ومدته", "قدرها", "قدره", "مقدارها", "نسبته")
+)
+_OPEN_MEASURE_WORDS = frozenset(
+    normalize_arabic(word) for word in ("لمدة", "مدة", "بمدة", "بنسبة", "نسبة")
 )
 _LINK_WORDS = frozenset(normalize_arabic(word) for line in _LINK_LINES for word in line.split())
 _MAX_LINK_WORDS = 6
@@ -378,8 +401,8 @@ class _Context:
     text: str
     folded: FoldedText
     quantities: tuple[Quantity, ...]
-    # Each rule's topic cues (first cue group), its spans here, and its units.
-    topics: tuple[tuple[tuple[str, ...], tuple[tuple[int, int], ...], frozenset[Unit]], ...] = ()
+    # Every rule that applies to the clause, with the spans of its topic cue.
+    topics: tuple[tuple[Rule, tuple[tuple[int, int], ...]], ...] = ()
 
     def spans(self, phrases: Sequence[str]) -> list[tuple[int, int]]:
         """Input spans of whole-word matches of ``phrases``."""
@@ -393,19 +416,42 @@ class _Context:
         return any(iter_folded_matches(self.folded.text, phrases))
 
     def before(self, quantity: Quantity, phrases: Sequence[str]) -> bool:
-        """True if any of ``phrases`` ends shortly before ``quantity``."""
-        lead = normalize_arabic(self.text[max(0, quantity.start - LEAD_WINDOW) : quantity.start])
+        """True if any of ``phrases`` occurs shortly before ``quantity`` in its phrase."""
+        start = max(self.phrase_start(quantity.start), quantity.start - LEAD_WINDOW)
+        lead = normalize_arabic(self.text[start : quantity.start])
         return any(iter_folded_matches(lead, phrases))
 
-    def states(self, quantity: Quantity, cues: Sequence[tuple[int, int]]) -> bool:
+    def phrase_start(self, offset: int) -> int:
+        """Offset where the phrase holding ``offset`` begins."""
+        breaks = [m.end() for m in _PHRASE_BREAK.finditer(self.text, 0, offset)]
+        return breaks[-1] if breaks else 0
+
+    def same_phrase(self, quantity: Quantity, spans: Sequence[tuple[int, int]]) -> bool:
+        """True if one of ``spans`` lies in the phrase holding ``quantity``."""
+        phrase = self.phrase_of(quantity.start)
+        return any(self.phrase_of(start) == phrase for start, _ in spans)
+
+    def states(self, quantity: Quantity, cues: Sequence[tuple[int, int]], *, ceiling: bool) -> bool:
         """True if ``quantity`` reads as the amount a cue is about.
 
         That is the case when the quantity comes right after a cue with only
         linking words between ("إجازة سنوية مدتها 15 يوماً", "بإشعار كتابي قبل
-        30 يوماً"), or right before one ("15 يوماً إجازة سنوية"). A number in
+        30 يوماً"), or right before one ("15 يوماً إجازة سنوية"), or when an
+        explicit measure word introduces it in the cue's own phrase ("إجازة
+        الحج لمرة واحدة ومدتها خمسة أيام"; for a ceiling also "بعدم منافسة
+        الشركة داخل المملكة لمدة ثلاث سنوات", "بنسبة 20%"). A number in
         another role, such as a deadline, a carry-over cap or an accrual rate
         ("بواقع 2.5 يوم عن كل شهر"), is linked by other words and fails.
         """
+        if self.same_phrase(quantity, cues):
+            lead = normalize_arabic(
+                self.text[max(0, quantity.start - LEAD_WINDOW) : quantity.start]
+            )
+            words = _GAP_PUNCTUATION.sub(" ", lead).split()
+            if words and (
+                words[-1] in _OWN_MEASURE_WORDS or (ceiling and words[-1] in _OPEN_MEASURE_WORDS)
+            ):
+                return True
         for start, end in cues:
             if end <= quantity.start:
                 gap = normalize_arabic(self.text[end : quantity.start])
@@ -433,19 +479,29 @@ class _Context:
         tail = normalize_arabic(self.text[quantity.end : stop])
         return any(iter_folded_matches(tail, phrases))
 
+    def excluded(self, quantity: Quantity, rule: Rule) -> bool:
+        """True if one of the rule's exclusion words shares the quantity's phrase.
+
+        Scoped to the phrase, so a Ramadan sub-item does not silence the
+        ordinary working day stated on the line above it.
+        """
+        return bool(rule.excludes) and self.same_phrase(quantity, self.spans(rule.excludes))
+
     def claimed_elsewhere(self, quantity: Quantity, rule: Rule, own: int) -> bool:
-        """True if another topic's cue is strictly closer to ``quantity`` than ``own``.
+        """True if another applicable topic in the same phrase is strictly closer.
 
         A number belongs to the topic it is written next to: in "دون إشعار أو
         تعويض، ومدة التجربة 90 يوماً" the 90 days are the probation, not a
         notice period, although both cues are within reach.
         """
         return any(
-            cues != rule.cues[0]
-            and quantity.unit in units
+            other.cues[0] != rule.cues[0]
+            and quantity.unit in other.units
             and spans
+            and self.same_phrase(quantity, spans)
             and _distance(quantity, spans) < own
-            for cues, spans, units in self.topics
+            and not self.excluded(quantity, other)
+            for other, spans in self.topics
         )
 
 
@@ -462,10 +518,9 @@ def check_clause(text: str, rules: Sequence[Rule]) -> tuple[Finding, ...]:
     plain = _Context(text, fold(text), tuple(extract_quantities(text)))
     # Only rules that apply to this clause compete for its numbers.
     topics = tuple(
-        (rule.cues[0], tuple(plain.spans(rule.cues[0])), rule.units)
+        (rule, tuple(plain.spans(rule.cues[0])))
         for rule in rules
         if all(plain.has(group) for group in rule.cues)
-        and not (rule.excludes and plain.has(rule.excludes))
     )
     context = _Context(plain.text, plain.folded, plain.quantities, topics)
     findings = (_apply(rule, context) for rule in rules)
@@ -473,8 +528,6 @@ def check_clause(text: str, rules: Sequence[Rule]) -> tuple[Finding, ...]:
 
 
 def _apply(rule: Rule, context: _Context) -> Finding | None:
-    if rule.excludes and context.has(rule.excludes):
-        return None
     groups = [context.spans(group) for group in rule.cues]
     if not all(groups):
         return None
@@ -498,16 +551,24 @@ def _candidates(
     taken = [span for group in groups for span in group]
     if rule.anchor:
         taken += context.spans(rule.anchor)
-    return [
+    found = [
         quantity
         for quantity in context.quantities
         if quantity.unit in rule.units
         and not any(_overlaps(quantity, span) for span in taken)
         and (own := _distance(quantity, groups[0])) <= CUE_WINDOW
+        and not context.excluded(quantity, rule)
         and not context.claimed_elsewhere(quantity, rule, own)
         and (not rule.per or context.after(quantity, rule.per))
         and not (rule.skip_after and context.before(quantity, rule.skip_after))
     ]
+    # Prefer numbers in a phrase that names the topic; a period's extension
+    # or stated total belongs to it too ("ويجوز تمديدها 90 يوماً").
+    topical = list(taken)
+    if rule.cumulative:
+        topical += context.spans((*_EXTENSION_PHRASES, *_CAP_PHRASES))
+    own_phrase = [q for q in found if context.same_phrase(q, topical)]
+    return own_phrase or found
 
 
 def _nearest_to_anchor(
@@ -532,7 +593,11 @@ def _judge(
 ) -> tuple[FindingKind, ReviewReason | None, tuple[Quantity, ...]]:
     """Combine the verdicts on each candidate into one."""
     if rule.cumulative:
-        caps = [q for q in candidates if context.before(q, _CAP_PHRASES)]
+        caps = [
+            q
+            for q in candidates
+            if context.before(q, _CAP_PHRASES) or context.after(q, _CAP_AFTER_PHRASES)
+        ]
         if caps:
             # A stated total ("لا يتجاوز مجموعها 180 يوماً") is what the law limits.
             candidates = caps
@@ -616,11 +681,14 @@ def _guard_violation(
         return FindingKind.REVIEW_NEEDED, ReviewReason.CONDITION_NOT_STATED
     if rule.blocks_violation and context.has(rule.blocks_violation):
         return FindingKind.REVIEW_NEEDED, ReviewReason.POSSIBLE_EXCEPTION
-    # An anchored rule has already tied its one quantity to the anchor's phrase.
+    # An anchored rule has already tied its one quantity to the anchor's phrase,
+    # and a rate rule's quantity carries its own rate word ("٥٤ ساعة أسبوعياً").
     # Otherwise one judged quantity must read as the amount: they all agree on
     # the violation (or add up to it), so one stated amount establishes it.
     cues = [span for group in groups for span in group]
-    if not rule.anchor and not any(context.states(q, cues) for q in judged):
+    tied = bool(rule.anchor or rule.per)
+    ceiling = rule.comparator is Comparator.MAXIMUM
+    if not tied and not any(context.states(q, cues, ceiling=ceiling) for q in judged):
         return FindingKind.REVIEW_NEEDED, ReviewReason.UNCLEAR_ROLE
     return FindingKind.VIOLATION, None
 
