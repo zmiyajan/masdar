@@ -295,3 +295,16 @@ keep these labels as written.
 **Consequence for the product:** the UI, API and MCP tool say that a flagged clause cites the
 article it breaks, that "compliant" means only that the stated number is within the limit, and
 that a clause with no flag has not been cleared.
+
+## Bounded work per document (after the independent review)
+
+- **Clauses over 3,000 characters get related articles but no verdict.** Real clauses are a few
+  hundred characters. The phrase lookups also became `bisect` over precomputed breaks; a 20 KB
+  clause used to take about a minute of CPU on the shared demo server.
+- **Documents over 300 clauses are refused**, and clauses under three words (headings) are not
+  searched, so one request cannot queue thousands of model calls.
+- **A law filter with no rules is refused.** Every rule is a Labor Law rule; an empty PDPL-only
+  report would read as a clean bill.
+- **Digit runs over six digits are identifiers** (IBAN, ID numbers), never periods or rates.
+
+None of these changed a verdict on the development or blind sets.

@@ -46,9 +46,11 @@ WEB_DIR = Path(__file__).parent / "web"
 MAX_K = 20
 _HEALTH_PATH = "/api/health"
 _CHECK_PATH = "/api/check"
-MAX_BODY_BYTES = 64 * 1024
-"""Largest request body accepted, checked before it is read (20,000 Arabic characters
-take about 40 KB in UTF-8). Without it a huge body is buffered and parsed first."""
+MAX_BODY_BYTES = 160 * 1024
+"""Largest request body accepted, checked before it is read, so a huge body is never
+buffered and parsed. Sized for 20,000 Arabic characters sent the way Python's
+``json.dumps`` does by default (``\\u0633``: six bytes each, about 120 KB), not just
+the raw UTF-8 a browser sends (about 40 KB)."""
 CHECKS_PER_MINUTE = 6
 """A contract check costs many searches; it gets its own, stricter limit."""
 _log = logging.getLogger(__name__)

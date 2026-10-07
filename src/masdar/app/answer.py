@@ -104,6 +104,8 @@ class AnswerService:
             related: Articles to return for reading around the answer;
                 defaults to the ``articles`` read. Only the top ``articles``
                 are quoted from, so this never changes the answer itself.
+                When the quoted article ranks below ``related``, the list is
+                extended to include it, so a quote always has its article.
 
         Returns:
             ``ANSWERED`` with up to ``max_sentences`` quotes from the best

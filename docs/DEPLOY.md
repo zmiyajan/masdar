@@ -118,6 +118,11 @@ git push        # authenticate with your HF username and the write token
   31st must return 429. If it never does, the header is not where we expect; if a second
   visitor is limited together with you, Spaces uses more than one hop. Adjust the variable in
   the Space settings either way.
+- **Check that POST bodies keep their size.** The API refuses a body without `Content-Length`
+  (411) so it never buffers a body of unknown size. Browsers send the header, but a proxy that
+  re-chunks bodies would remove it, and then every contract check fails with 411. If the sample
+  contract returns 411 on the Space, replace the header check in `entrypoints/api.py` with a
+  byte-counting wrapper around the ASGI `receive` channel.
 
 ### Rolling back
 Every upload is a commit in the Space repository. Revert it there (in the web UI under

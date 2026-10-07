@@ -1,5 +1,6 @@
 """HTTP API tests: a real SearchService over a fake retriever, through TestClient."""
 
+import json
 import re
 from collections.abc import Iterator, Sequence
 from typing import Any
@@ -365,6 +366,15 @@ class TestRequestLimits:
         assert response.status_code == 413
         assert response.json()["error"]["code"] == "body_too_large"
         assert response.headers["X-Content-Type-Options"] == "nosniff"
+
+    def test_the_documented_limit_fits_escaped_json(self, client: TestClient) -> None:
+        # requests' json= and json.dumps escape Arabic: 20,000 characters ~ 120 KB.
+        body = json.dumps({"text": "يخضع الموظف لفترة تجربة. " * 800}).encode()
+        assert len(json.loads(body)["text"]) == 20_000
+        response = client.post(
+            "/api/check", content=body, headers={"Content-Type": "application/json"}
+        )
+        assert response.status_code == 200, response.text
 
     def test_a_body_of_unknown_size_is_refused(self, client: TestClient) -> None:
         def chunks() -> Iterator[bytes]:

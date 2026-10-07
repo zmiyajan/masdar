@@ -89,3 +89,16 @@ produces a working image that warms up on first start instead.
   `pyproject.toml` would shrink the image substantially.
 - ⚠️ The demo answers questions with articles. It does not give legal advice, and the UI says so
   on every page.
+
+## Addendum: request limits for answers and contract checks
+
+- **Bodies are bounded before they are read.** `POST /api/check` is the first endpoint with a
+  body. Pydantic's `max_length` applies only after the whole body is buffered and parsed, so the
+  guard middleware refuses bodies over 160 KB (413) and bodies without `Content-Length` (411).
+  160 KB fits the documented 20,000 characters even when a client escapes Arabic as `\uXXXX`
+  (Python's `json.dumps` default, about 120 KB). The 411 policy depends on the proxy keeping the
+  header; DEPLOY.md says how to check it and what replaces it if it does not.
+- **Contract checks cost more, so they have their own limit:** 6 per minute per client, on top of
+  the general 30.
+- **A broken invariant inside the checker is a 500, not a 422.** Only `InvalidDocumentError`
+  (empty, too long, too many clauses, no rules for the chosen laws) is the caller's problem.
