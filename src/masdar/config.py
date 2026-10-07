@@ -28,6 +28,10 @@ class Settings(BaseSettings):
         index_dir: Cache of corpus embeddings (gitignored, safe to delete).
         pipeline: The search pipeline the CLI, API and MCP server serve; one of
             ``masdar.container.PIPELINES``. ``bm25`` runs without the ``ml`` extra.
+        trusted_proxy_hops: Reverse proxies in front of the app that append to
+            ``X-Forwarded-For``. The rate limit keys on the entry the nearest
+            trusted proxy wrote; entries further left are client-controlled.
+            ``0`` (default) uses the socket peer and ignores the header.
     """
 
     model_config = SettingsConfigDict(env_prefix="MASDAR_", env_file=".env", extra="ignore")
@@ -43,3 +47,4 @@ class Settings(BaseSettings):
     eval_dir: Path = Path("eval")
     index_dir: Path = Path("data/index")
     pipeline: str = "dense+rerank"
+    trusted_proxy_hops: int = Field(default=0, ge=0)

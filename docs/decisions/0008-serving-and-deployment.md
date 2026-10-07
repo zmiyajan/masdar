@@ -73,9 +73,11 @@ produces a working image that warms up on first start instead.
 - ✅ The UI is about 32 KB of unminified first-party code with nothing to build, audit or upgrade.
 - ✅ The page cannot run injected script, even if a source document contained markup.
 - ⚠️ **The rate limit is per process and in memory.** It resets on restart and does not span
-  replicas; scaling out needs a shared store (for example Redis). It keys on the client address
-  that uvicorn derives from `X-Forwarded-For` (`--proxy-headers`), which a client can forge
-  unless the proxy overwrites the header. It protects a demo from accidental overload, not from a
+  replicas; scaling out needs a shared store (for example Redis). It keys on the `X-Forwarded-For`
+  entry written by our own edge proxy (`MASDAR_TRUSTED_PROXY_HOPS`, counted from the right),
+  never on entries a client can send, so a forged header gets no fresh bucket. Model inference
+  is serialised by a lock in each model adapter: tokenizers are not thread-safe, and two
+  vCPUs gain nothing from parallel forward passes. It protects a demo from accidental overload, not from a
   determined attacker.
 - ⚠️ **Google Fonts** is the one third-party request: visitors' IP addresses reach Google. It can
   be removed by self-hosting the two font families under `web/` and dropping the two Google hosts

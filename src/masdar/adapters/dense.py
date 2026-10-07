@@ -20,9 +20,11 @@ cache by construction.
 """
 
 import hashlib
+import logging
 import os
 import re
 import tempfile
+import threading
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Protocol
@@ -36,6 +38,12 @@ from masdar.domain.models import Chunk, Hit
 
 DEFAULT_EMBEDDING_MODEL = "intfloat/multilingual-e5-small"
 """Default bi-encoder: 118M parameters, measured on par with mE5-base here (ADR-0007)."""
+
+DEFAULT_EMBEDDING_REVISION = "614241f622f53c4eeff9890bdc4f31cfecc418b3"
+"""Pinned Hub commit of the default model: the one ADR-0007 measured. An upstream
+update can then never change results silently, and it is part of the cache key."""
+
+_log = logging.getLogger(__name__)
 
 DEFAULT_CACHE_DIR = Path("data/index")
 """Where corpus embeddings are cached; gitignored and safe to delete."""
@@ -61,11 +69,18 @@ class Encoder(Protocol):
 class SentenceTransformerEncoder:
     """`Encoder` backed by a sentence-transformers model."""
 
-    def __init__(self, model_name: str, device: str | None = None, batch_size: int = 32) -> None:
+    def __init__(
+        self,
+        model_name: str,
+        revision: str | None = None,
+        device: str | None = None,
+        batch_size: int = 32,
+    ) -> None:
         """Load the model (downloads it from Hugging Face on first use).
 
         Args:
             model_name: Hugging Face model id.
+            revision: Hub commit to load; the latest when ``None``.
             device: ``"mps"``, ``"cuda"`` or ``"cpu"``; picked automatically if ``None``.
             batch_size: Texts per forward pass when encoding.
         """
@@ -74,15 +89,19 @@ class SentenceTransformerEncoder:
         import sentence_transformers  # type: ignore[import-not-found,unused-ignore]  # noqa: PLC0415
 
         self._model = sentence_transformers.SentenceTransformer(
-            model_name, device=device or select_device()
+            model_name, revision=revision, device=device or select_device()
         )
         self._batch_size = batch_size
+        # One model is shared by every request thread of the web app, and fast
+        # tokenizers are not safe to call concurrently ("Already borrowed").
+        self._lock = threading.Lock()
 
     def encode(self, texts: Sequence[str]) -> Embeddings:
         """Embed ``texts`` as unit-length float32 rows."""
-        vectors = self._model.encode(
-            list(texts), batch_size=self._batch_size, normalize_embeddings=True
-        )
+        with self._lock:
+            vectors = self._model.encode(
+                list(texts), batch_size=self._batch_size, normalize_embeddings=True
+            )
         return np.asarray(vectors, dtype=np.float32)
 
 
@@ -95,6 +114,7 @@ class DenseRetriever:
         encoder: Encoder,
         *,
         model_name: str = DEFAULT_EMBEDDING_MODEL,
+        revision: str | None = None,
         cache_dir: Path | None = None,
     ) -> None:
         """Embed the corpus, or load its embeddings from the cache.
@@ -104,6 +124,8 @@ class DenseRetriever:
             encoder: Produces the embeddings.
             model_name: Identifies the encoder's model in the cache file name,
                 so two models never share a cache file.
+            revision: The model's Hub commit, also part of the cache file name,
+                so updated weights never reuse old vectors.
             cache_dir: Directory for the embedding cache; ``None`` disables it.
 
         Raises:
@@ -118,7 +140,8 @@ class DenseRetriever:
         self._cache_path = (
             None
             if cache_dir is None
-            else cache_dir / f"{_slug(model_name)}-{corpus_fingerprint(self._chunks, passages)}.npy"
+            else cache_dir / f"{_slug(model_name, revision)}-"
+            f"{corpus_fingerprint(self._chunks, passages)}.npy"
         )
         self._matrix = self._load_or_embed(passages)
 
@@ -128,6 +151,7 @@ class DenseRetriever:
         chunks: Sequence[Chunk],
         *,
         model_name: str = DEFAULT_EMBEDDING_MODEL,
+        revision: str | None = DEFAULT_EMBEDDING_REVISION,
         cache_dir: Path | None = DEFAULT_CACHE_DIR,
         device: str | None = None,
     ) -> "DenseRetriever":
@@ -136,11 +160,12 @@ class DenseRetriever:
         Args:
             chunks: The corpus to search.
             model_name: Hugging Face id of an E5-style model.
+            revision: Hub commit to load; pinned to the measured one by default.
             cache_dir: Directory for the embedding cache; ``None`` disables it.
             device: Torch device; picked automatically if ``None``.
         """
-        encoder = SentenceTransformerEncoder(model_name, device=device)
-        return cls(chunks, encoder, model_name=model_name, cache_dir=cache_dir)
+        encoder = SentenceTransformerEncoder(model_name, revision=revision, device=device)
+        return cls(chunks, encoder, model_name=model_name, revision=revision, cache_dir=cache_dir)
 
     @property
     def name(self) -> str:
@@ -171,11 +196,16 @@ class DenseRetriever:
     def _load_or_embed(self, passages: list[str]) -> Embeddings:
         path = self._cache_path
         if path is not None and path.exists():
-            cached = np.load(path, allow_pickle=False)
-            # The fingerprint already pins the content; the shape check only
-            # guards against a file written by something else under that name.
-            if cached.ndim == 2 and cached.shape[0] == len(passages):  # noqa: PLR2004 - a matrix
-                return np.asarray(cached, dtype=np.float32)
+            try:
+                cached = np.load(path, allow_pickle=False)
+            except (OSError, ValueError) as error:
+                # A cache is disposable: a damaged file costs one re-embedding.
+                _log.warning("Ignoring unreadable embedding cache %s: %s", path, error)
+            else:
+                # The fingerprint already pins the content; the shape check only
+                # guards against a file written by something else under that name.
+                if cached.ndim == 2 and cached.shape[0] == len(passages):  # noqa: PLR2004
+                    return np.asarray(cached, dtype=np.float32)
         matrix = _unit_rows(self._encode(passages, expected=len(passages)))
         if path is not None:
             _save_atomically(path, matrix)
@@ -208,8 +238,9 @@ def corpus_fingerprint(chunks: Sequence[Chunk], texts: Sequence[str]) -> str:
     return digest.hexdigest()[:16]
 
 
-def _slug(model_name: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", model_name.lower()).strip("-")
+def _slug(model_name: str, revision: str | None = None) -> str:
+    name = model_name if revision is None else f"{model_name}@{revision[:12]}"
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
 def _unit_rows(matrix: Embeddings) -> Embeddings:

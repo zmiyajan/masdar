@@ -153,6 +153,20 @@ class TestCache:
         base = DenseRetriever(CHUNKS, BagOfWordsEncoder(), model_name="a/b", cache_dir=tmp_path)
         assert small.cache_path != base.cache_path
 
+    def test_a_new_model_revision_never_reuses_old_vectors(self, tmp_path: Path) -> None:
+        old = DenseRetriever(CHUNKS, BagOfWordsEncoder(), revision="aaaa1111", cache_dir=tmp_path)
+        new = DenseRetriever(CHUNKS, BagOfWordsEncoder(), revision="bbbb2222", cache_dir=tmp_path)
+        assert old.cache_path != new.cache_path
+
+    def test_an_unreadable_file_is_rebuilt(self, tmp_path: Path) -> None:
+        built = DenseRetriever(CHUNKS, BagOfWordsEncoder(), cache_dir=tmp_path)
+        assert built.cache_path is not None
+        built.cache_path.write_bytes(b"not a numpy file")
+        encoder = BagOfWordsEncoder()
+        DenseRetriever(CHUNKS, encoder, cache_dir=tmp_path)
+        assert len(encoder.calls) == 1
+        assert np.load(built.cache_path).shape == (len(CHUNKS), len(VOCABULARY))
+
     def test_a_mismatched_file_is_rebuilt(self, tmp_path: Path) -> None:
         built = DenseRetriever(CHUNKS, BagOfWordsEncoder(), cache_dir=tmp_path)
         assert built.cache_path is not None

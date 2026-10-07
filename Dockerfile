@@ -55,13 +55,19 @@ USER user
 # should never ship.
 RUN python -m masdar.entrypoints.warmup
 
+# From here on the image is self-contained: the weights are inside it, and the
+# Hub is never contacted at runtime (the pinned revisions guarantee the same
+# model the evaluation measured).
+ENV HF_HUB_OFFLINE=1 \
+    MASDAR_TRUSTED_PROXY_HOPS=1
+
 EXPOSE 7860
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
     CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7860/api/health', timeout=4)"]
 
-# --proxy-headers: Spaces sits behind a proxy, and the rate limit keys on the
-# client address from X-Forwarded-For. One worker: the limiter is in-memory.
+# Spaces sits behind one proxy that appends the client address to
+# X-Forwarded-For; the rate limit keys on that entry (MASDAR_TRUSTED_PROXY_HOPS),
+# never on client-supplied ones. One worker: the limiter is in-memory.
 CMD ["uvicorn", "masdar.entrypoints.api:create_app", "--factory", \
-     "--host", "0.0.0.0", "--port", "7860", \
-     "--proxy-headers", "--forwarded-allow-ips", "*", "--workers", "1"]
+     "--host", "0.0.0.0", "--port", "7860", "--workers", "1"]

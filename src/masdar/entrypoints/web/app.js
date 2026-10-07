@@ -104,14 +104,17 @@
     add: "أُضيفت هذه المادة",
     consolidate: "أُعيدت صياغة هذه المادة",
     renumber: "أُعيد ترقيم هذه المادة",
-    partial: "على هذه المادة تعديل جزئي لم يُطبَّق آلياً",
+    partial: "عُدّل جزء من هذه المادة",
   };
 
   function provenance(amendment) {
     const parts = [AMENDMENT_VERBS[amendment.kind] || "عُدّلت هذه المادة"];
     if (amendment.decree) parts.push(`بالمرسوم الملكي رقم (${amendment.decree})`);
     if (amendment.issued) parts.push(`وتاريخ ${amendment.issued} هـ`);
-    return parts.join(" ") + ".";
+    let sentence = parts.join(" ") + ".";
+    // Say plainly that the shown text may predate a partial edit.
+    if (amendment.kind === "partial") sentence += " لم يُدمج التعديل في النص المعروض؛ راجع المصدر الرسمي.";
+    return sentence;
   }
 
   function citationText(hit) {
@@ -207,14 +210,15 @@
     history.replaceState(null, "", `?${params}`);
 
     if (inFlight) inFlight.abort();
-    inFlight = new AbortController();
+    const controller = new AbortController();
+    inFlight = controller;
     setBusy(true);
     setStatus("جارٍ البحث…");
     list.replaceChildren();
     try {
       const response = await fetch(`/api/search?${params}`, {
         headers: { Accept: "application/json" },
-        signal: inFlight.signal,
+        signal: controller.signal,
       });
       const body = await response.json();
       if (!response.ok) {
@@ -232,7 +236,11 @@
       if (error.name === "AbortError") return;
       setStatus("تعذّر الاتصال بالخادم. تحقّق من اتصالك ثم أعد المحاولة.", "error");
     } finally {
-      setBusy(false);
+      // An aborted older search must not end the busy state of the newer one.
+      if (inFlight === controller) {
+        inFlight = null;
+        setBusy(false);
+      }
     }
   }
 

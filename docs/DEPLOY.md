@@ -111,6 +111,11 @@ git push        # authenticate with your HF username and the write token
 - When it shows **Running**, open `https://<hf-user>-masdar.hf.space/api/health`.
 - Try the four example questions in the UI and check that the citations and source links work.
 - No secrets are needed: the core runs on local models only.
+- **Check the proxy depth once.** The rate limit trusts `MASDAR_TRUSTED_PROXY_HOPS=1` proxy.
+  Send 31 quick requests to `/api/search` with a made-up `X-Forwarded-For: 1.2.3.4` header: the
+  31st must return 429. If it never does, the header is not where we expect; if a second
+  visitor is limited together with you, Spaces uses more than one hop. Adjust the variable in
+  the Space settings either way.
 
 ### Rolling back
 Every upload is a commit in the Space repository. Revert it there (in the web UI under

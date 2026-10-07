@@ -169,6 +169,20 @@ class TestSearchService:
         assert [r.article.number.value for r in service.search("سؤال")] == [2, 1]
         assert service.name == "fake+reverse"
 
+    def test_law_filter_reaches_past_other_laws(self) -> None:
+        # The only PDPL hit ranks below more labor-law hits than one batch holds.
+        labor = [hit(n, n) for n in range(1, 8)]
+        pdpl_chunk = Chunk(
+            "pdpl:3#0",
+            Article("pdpl", "نظام حماية البيانات الشخصية", ArticleNumber(3), "م", "نص"),
+            "نص",
+            "نص",
+        )
+        retriever = FakeRetriever([*labor, Hit(pdpl_chunk, 0.01, 8, "fake")])
+        results = SearchService(retriever, candidates=2).search("سؤال", laws={"pdpl"})
+        assert [r.article.article_id for r in results] == ["pdpl:3"]
+        assert [k for _, k in retriever.calls] == [2, 4, 8, 16]
+
     def test_law_filter(self) -> None:
         service = SearchService(FakeRetriever([hit(1, 1)]))
         assert service.search("سؤال", laws={"pdpl"}) == []

@@ -10,6 +10,7 @@ chapter, heading) on one line, then its text: the headings tell the model what
 the article is about, which measured better than the text alone (ADR-0007).
 """
 
+import threading
 from collections.abc import Sequence
 from typing import Protocol
 
@@ -24,6 +25,9 @@ DEFAULT_RERANKER_MODEL = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
 Chosen because it fits the CPU latency budget of the public demo; the much
 larger ``BAAI/bge-reranker-v2-m3`` is the quality option on a GPU (ADR-0007).
 """
+
+DEFAULT_RERANKER_REVISION = "1427fd652930e4ba29e8149678df786c240d8825"
+"""Pinned Hub commit of the default reranker: the one ADR-0007 measured."""
 
 DEFAULT_RERANK_CANDIDATES = 30
 """First-stage hits to rerank; pass as ``SearchService(candidates=...)``.
@@ -53,12 +57,17 @@ class SentenceTransformerPairScorer:
     """`PairScorer` backed by a sentence-transformers `CrossEncoder`."""
 
     def __init__(
-        self, model_name: str, device: str | None = None, max_length: int = MAX_PAIR_TOKENS
+        self,
+        model_name: str,
+        revision: str | None = None,
+        device: str | None = None,
+        max_length: int = MAX_PAIR_TOKENS,
     ) -> None:
         """Load the model (downloads it from Hugging Face on first use).
 
         Args:
             model_name: Hugging Face model id.
+            revision: Hub commit to load; the latest when ``None``.
             device: ``"mps"``, ``"cuda"`` or ``"cpu"``; picked automatically if ``None``.
             max_length: Truncation length in tokens for one pair.
         """
@@ -66,13 +75,16 @@ class SentenceTransformerPairScorer:
         import sentence_transformers  # type: ignore[import-not-found,unused-ignore]  # noqa: PLC0415
 
         self._model = sentence_transformers.CrossEncoder(
-            model_name, device=device or select_device(), max_length=max_length
+            model_name, revision=revision, device=device or select_device(), max_length=max_length
         )
+        # Shared by every request thread; fast tokenizers are not thread-safe.
+        self._lock = threading.Lock()
 
     def score(self, pairs: Sequence[tuple[str, str]]) -> Sequence[float]:
         """Score every pair in one batch, returning raw logits."""
         # One batch: the candidate list is short, and one forward pass is fastest.
-        scores = self._model.predict(list(pairs), batch_size=max(1, len(pairs)))
+        with self._lock:
+            scores = self._model.predict(list(pairs), batch_size=max(1, len(pairs)))
         return [float(value) for value in scores]
 
 
@@ -91,15 +103,19 @@ class CrossEncoderReranker:
 
     @classmethod
     def from_model(
-        cls, model_name: str = DEFAULT_RERANKER_MODEL, device: str | None = None
+        cls,
+        model_name: str = DEFAULT_RERANKER_MODEL,
+        revision: str | None = DEFAULT_RERANKER_REVISION,
+        device: str | None = None,
     ) -> "CrossEncoderReranker":
         """Build a reranker backed by a real cross-encoder model.
 
         Args:
             model_name: Hugging Face id of a cross-encoder.
+            revision: Hub commit to load; pinned to the measured one by default.
             device: Torch device; picked automatically if ``None``.
         """
-        return cls(SentenceTransformerPairScorer(model_name, device=device))
+        return cls(SentenceTransformerPairScorer(model_name, revision=revision, device=device))
 
     @property
     def name(self) -> str:

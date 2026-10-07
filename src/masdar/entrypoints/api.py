@@ -7,6 +7,7 @@ building it means indexing the whole corpus.
 """
 
 import logging
+import math
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -88,7 +89,7 @@ def create_app(
         docs_url="/docs",
         redoc_url=None,
     )
-    _install_middleware(app, limiter)
+    _install_middleware(app, limiter, config.trusted_proxy_hops)
     _install_error_handlers(app)
 
     @app.get("/api/health", response_model=HealthResponse, tags=["meta"])
@@ -126,12 +127,44 @@ def create_app(
             results=[to_hit(result, source_urls) for result in results],
         )
 
+    @app.api_route(
+        "/api/{rest:path}",
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        include_in_schema=False,
+    )
+    def unknown_api_route(rest: str) -> JSONResponse:  # noqa: ARG001 - matched, not used
+        """Keep unknown ``/api`` paths in the JSON error envelope, not the static 404."""
+        return _error(404, "not_found", "No such API route.", "لا يوجد مسار بهذا الاسم.")
+
     # Mounted last so that it only serves what no API route matched.
     app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
     return app
 
 
-def _install_middleware(app: FastAPI, limiter: RateLimiter) -> None:
+def client_key(request: Request, trusted_proxy_hops: int) -> str:
+    """The address the rate limit counts against.
+
+    Each trusted proxy appends the address it received the request from, so the
+    entry ``trusted_proxy_hops`` from the right was written by our own edge.
+    Anything to its left was sent by the client and can be forged.
+
+    Args:
+        request: The incoming request.
+        trusted_proxy_hops: Proxies in front of the app (``Settings``).
+    """
+    peer = request.client.host if request.client else "unknown"
+    if trusted_proxy_hops == 0:
+        return peer
+    forwarded = [
+        entry.strip()
+        for header in request.headers.getlist("x-forwarded-for")
+        for entry in header.split(",")
+        if entry.strip()
+    ]
+    return forwarded[-trusted_proxy_hops] if len(forwarded) >= trusted_proxy_hops else peer
+
+
+def _install_middleware(app: FastAPI, limiter: RateLimiter, trusted_proxy_hops: int) -> None:
     @app.middleware("http")
     async def guard(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
@@ -140,8 +173,7 @@ def _install_middleware(app: FastAPI, limiter: RateLimiter) -> None:
         response: Response
         wait = None
         if path.startswith("/api/") and path != _HEALTH_PATH:
-            client = request.client.host if request.client else "unknown"
-            wait = limiter.retry_after(client)
+            wait = limiter.retry_after(client_key(request, trusted_proxy_hops))
         if wait is not None:
             response = _error(
                 429,
@@ -149,9 +181,21 @@ def _install_middleware(app: FastAPI, limiter: RateLimiter) -> None:
                 f"Too many requests: at most {limiter.limit} per minute. Try again shortly.",
                 f"طلبات كثيرة: الحد {limiter.limit} طلباً في الدقيقة. حاول بعد قليل.",
             )
-            response.headers["Retry-After"] = str(max(1, round(wait)))
+            response.headers["Retry-After"] = str(max(1, math.ceil(wait)))
         else:
-            response = await call_next(request)
+            try:
+                response = await call_next(request)
+            except Exception:
+                # Handled here, inside the guard, so a 500 still carries the
+                # security headers. Logged with its traceback for operators;
+                # the client never sees it.
+                _log.exception("Unhandled error on %s", path)
+                response = _error(
+                    500,
+                    "internal_error",
+                    "Something went wrong on our side. Please try again.",
+                    "حدث خطأ في الخادم. حاول مرة أخرى.",
+                )
         response.headers.update(security_headers(path))
         return response
 
@@ -185,15 +229,4 @@ def _install_error_handlers(app: FastAPI) -> None:
             f"Invalid or missing parameters: {', '.join(fields)}. "
             f"q is required; k must be between 1 and {MAX_K}.",
             f"معاملات ناقصة أو غير صالحة: السؤال q مطلوب، وعدد النتائج k بين 1 و{MAX_K}.",
-        )
-
-    @app.exception_handler(Exception)
-    async def unexpected(request: Request, error: Exception) -> JSONResponse:
-        # Logged with its traceback for operators; the client never sees it.
-        _log.exception("Unhandled error on %s", request.url.path, exc_info=error)
-        return _error(
-            500,
-            "internal_error",
-            "Something went wrong on our side. Please try again.",
-            "حدث خطأ في الخادم. حاول مرة أخرى.",
         )

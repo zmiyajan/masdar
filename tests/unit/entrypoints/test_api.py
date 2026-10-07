@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from entrypoints.entrypoint_fakes import FakeRetriever
+from entrypoints.entrypoint_fakes import REPO_ROOT, FakeRetriever
 from masdar.app.search import SearchService
 from masdar.config import Settings
 from masdar.domain.search import MAX_QUERY_CHARS
@@ -172,6 +172,30 @@ class TestSecurityHeaders:
         assert "https://cdn.jsdelivr.net" in csp
 
 
+class TestErrors:
+    def test_unknown_api_path_is_a_json_404(self, client: TestClient) -> None:
+        response = client.get("/api/nope")
+        assert response.status_code == 404
+        assert response.json()["error"]["code"] == "not_found"
+
+    def test_a_crash_is_a_generic_500_that_keeps_the_security_headers(
+        self, settings: Settings
+    ) -> None:
+        class Exploding:
+            name = "boom"
+
+            def search(self, query: str, k: int) -> list[Any]:  # noqa: ARG002
+                raise RuntimeError("secret detail")
+
+        app = create_app(SearchService(Exploding()), settings)
+        with TestClient(app, raise_server_exceptions=False) as crashing:
+            response = crashing.get("/api/search", params={"q": "س"})
+        assert response.status_code == 500
+        assert response.json()["error"]["code"] == "internal_error"
+        assert "secret detail" not in response.text
+        assert response.headers["X-Content-Type-Options"] == "nosniff"
+
+
 class TestRateLimit:
     def make_client(self, service: SearchService, settings: Settings) -> TestClient:
         return TestClient(create_app(service, settings, rate_limiter=RateLimiter(limit=2)))
@@ -214,3 +238,36 @@ class TestDefaultService:
             client.get("/api/health")
             client.get("/api/health")
         assert calls == [settings]  # once per process, not per request
+
+
+class TestClientKey:
+    def make_client(self, service: SearchService, hops: int) -> TestClient:
+        settings = Settings(dataset_dir=REPO_ROOT / "data" / "dataset", trusted_proxy_hops=hops)
+        return TestClient(create_app(service, settings, rate_limiter=RateLimiter(limit=2)))
+
+    def test_forged_forwarded_for_gets_no_fresh_bucket(self, service: SearchService) -> None:
+        # The edge proxy appends the real address; the client controls the rest.
+        with self.make_client(service, hops=1) as client:
+            codes = [
+                client.get(
+                    "/api/laws", headers={"X-Forwarded-For": f"10.0.0.{n}, 203.0.113.7"}
+                ).status_code
+                for n in range(3)
+            ]
+        assert codes == [200, 200, 429]
+
+    def test_distinct_real_clients_have_separate_buckets(self, service: SearchService) -> None:
+        with self.make_client(service, hops=1) as client:
+            codes = [
+                client.get("/api/laws", headers={"X-Forwarded-For": f"203.0.113.{n}"}).status_code
+                for n in range(3)
+            ]
+        assert codes == [200, 200, 200]
+
+    def test_without_trusted_proxies_the_header_is_ignored(self, service: SearchService) -> None:
+        with self.make_client(service, hops=0) as client:
+            codes = [
+                client.get("/api/laws", headers={"X-Forwarded-For": f"203.0.113.{n}"}).status_code
+                for n in range(3)
+            ]
+        assert codes == [200, 200, 429]
