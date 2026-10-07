@@ -139,8 +139,11 @@ class RegulationTools:
         returns a verdict that cites the article: violation, compliant, or
         review_needed when the wording is uncertain. Verdicts are rules pinned
         to the law's text in force, never a model's opinion. Every clause also
-        gets related articles. This is not legal advice: present verdicts as
-        pointers for a person to verify.
+        gets related articles. A violation is reliable (it never fired on a
+        compliant clause in blind tests); the absence of a finding is NOT a
+        clean bill, since many phrasings are missed, and "compliant" only means
+        the stated number is within the limit. This is not legal advice:
+        present verdicts as pointers for a person to verify.
 
         Args:
             text: The contract or policy, in Arabic, up to 20,000 characters.

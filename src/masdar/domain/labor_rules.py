@@ -308,6 +308,10 @@ MATERNITY_LEAVE_MIN = Rule(
     # "From four weeks before the due date" and "extend by a month unpaid" are
     # not the length of the paid leave.
     skip_after=("قبل", "بعد", "خلال", "تمديد", "تمديدها", "يمدد", "تمدد", "دون أجر"),
+    # The article grants the weeks at full pay; reduced pay is not compliant
+    # even when the number of weeks is. "دون أجر" is not listed: the same
+    # article allows an unpaid extension beyond the paid weeks.
+    blocks_compliant=("نصف أجرها", "نصف الأجر", "نصف أجر", "بنصف", "بأجر مخفض", "بأجر جزئي"),
 )
 
 SICK_LEAVE_FULL_PAY_MIN = Rule(

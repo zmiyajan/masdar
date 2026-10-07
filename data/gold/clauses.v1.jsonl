@@ -138,3 +138,7 @@
 {"_id": "cl-138", "text": "يستحق الموظف إجازة زواج لمرة واحدة مدتها أسبوع.", "expected": [{"rule_id": "marriage-leave-min", "kind": "compliant"}], "note": "Blind batch 3. A bare singular week."}
 {"_id": "cl-139", "text": "الإجازة السنوية: 25 يوماً عمل.", "expected": [{"rule_id": "annual-leave-min", "kind": "compliant"}], "note": "Blind batch 3."}
 {"_id": "cl-140", "text": "تمنح الموظفة إجازة وضع بأجر كامل لمدة عشرة أسابيع تبدأ قبل الولادة بأسبوعين.", "expected": [{"rule_id": "maternity-leave-min", "kind": "violation"}], "note": "Blind batch 3."}
+{"_id": "cl-141", "text": "مدة التجربة ثلاثة أشهر، ويجوز للشركة أن تمددها بعد ذلك.", "expected": [{"rule_id": "probation-max", "kind": "review_needed"}], "note": "Extension mentioned in the same clause without a length: the total is open."}
+{"_id": "cl-142", "text": "تبدأ الفترة التجريبية بشهرين. وإذا رأت الإدارة الحاجة فإنها تمددها ثلاثة أشهر أخرى.", "expected": [{"rule_id": "probation-max", "kind": "compliant"}], "note": "2 + 3 months is at most 155 days even across two sentences: compliant."}
+{"_id": "cl-143", "text": "تستحق الموظفة إجازة أمومة لمدة اثني عشر أسبوعاً بنصف الأجر.", "expected": [{"rule_id": "maternity-leave-min", "kind": "review_needed"}], "note": "Weeks meet the limit but the pay contradicts 'full pay': never a clean compliant."}
+{"_id": "cl-144", "text": "للموظفة إجازة وضع مدتها ثلاثة عشر أسبوعاً بأجر كامل.", "expected": [{"rule_id": "maternity-leave-min", "kind": "compliant"}], "note": "Control: full pay, above the limit."}

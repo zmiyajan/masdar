@@ -321,3 +321,26 @@ def test_contract_report_counts() -> None:
 
 def test_limit_quantity_is_a_plain_quantity() -> None:
     assert PROBATION_MAX.limit == Quantity(180, Unit.DAY)
+
+
+def _verdicts(text: str) -> list[tuple[str, FindingKind]]:
+    return [(finding.rule.rule_id, finding.kind) for finding in check_clause(text, LABOR_RULES)]
+
+
+def test_an_extension_in_the_next_sentence_keeps_the_total_open() -> None:
+    text = "فترة التجربة 4 أشهر. ويمكن أن نمددها شهرين بالاتفاق."
+    assert _verdicts(text) == [("probation-max", FindingKind.REVIEW_NEEDED)]
+
+
+@pytest.mark.parametrize(
+    ("pay", "kind"),
+    [
+        pytest.param("بأجر كامل", FindingKind.COMPLIANT, id="full-pay"),
+        pytest.param("بنصف الأجر", FindingKind.REVIEW_NEEDED, id="half-pay"),
+        # The article itself allows an unpaid extension, so this stays compliant.
+        pytest.param("ويجوز تمديدها شهراً دون أجر", FindingKind.COMPLIANT, id="unpaid-extension"),
+    ],
+)
+def test_reduced_pay_is_never_a_clean_compliant(pay: str, kind: FindingKind) -> None:
+    text = f"للموظفة إجازة وضع مدتها اثنا عشر أسبوعاً {pay}."
+    assert _verdicts(text) == [("maternity-leave-min", kind)]

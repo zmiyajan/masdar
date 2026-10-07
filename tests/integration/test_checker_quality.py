@@ -28,10 +28,10 @@ CLAUSES = REPO_ROOT / "data" / "gold" / "clauses.v1.jsonl"
 # Recorded 2026-10-07 on 140 clauses (ADR-0010, v2).
 RECORDED = {
     FindingKind.VIOLATION: (1.0, 1.0),
-    FindingKind.COMPLIANT: (1.0, 0.9298),
-    FindingKind.REVIEW_NEEDED: (0.8333, 0.9375),
+    FindingKind.COMPLIANT: (1.0, 0.9322),
+    FindingKind.REVIEW_NEEDED: (0.85, 0.9444),
 }
-RECORDED_EXACT_ACCURACY = 0.95
+RECORDED_EXACT_ACCURACY = 0.9514
 TOLERANCE = 0.01
 
 
@@ -55,12 +55,18 @@ def test_labeled_set_is_well_formed(labeled: list[LabeledClause]) -> None:
     assert ids == [f"cl-{n:03d}" for n in range(1, len(ids) + 1)]
     known = {rule.rule_id for rule in LABOR_RULES}
     assert {rule for clause in labeled for rule, _ in clause.expected} <= known
-    assert len(labeled) == 140
+    assert len(labeled) == 144
     assert sum(1 for clause in labeled if not clause.expected) >= 10
 
 
 def test_no_false_violations(report: CheckerQualityReport) -> None:
     assert report.score(FindingKind.VIOLATION).precision == 1.0, report.to_dict()["misses"]
+
+
+def test_no_false_reassurance(report: CheckerQualityReport) -> None:
+    # A wrong "compliant" tells an HR team a clause is fine when it is not;
+    # after blind set v2 found two, it is held to 1.0 like violations.
+    assert report.score(FindingKind.COMPLIANT).precision == 1.0, report.to_dict()["misses"]
 
 
 @pytest.mark.parametrize("kind", list(FindingKind))

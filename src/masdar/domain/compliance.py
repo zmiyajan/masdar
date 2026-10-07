@@ -64,6 +64,7 @@ class ReviewReason(StrEnum):
     CONDITION_NOT_STATED = "condition_not_stated"
     POSSIBLE_EXCEPTION = "possible_exception"
     UNCLEAR_ROLE = "unclear_role"
+    CONDITION_CONTRADICTED = "condition_contradicted"
     ARTICLE_UNDER_REVIEW = "article_under_review"
 
 
@@ -77,6 +78,9 @@ _REASON_TEXT = {
     ReviewReason.POSSIBLE_EXCEPTION: "قد ينطبق استثناء نص عليه النظام",
     ReviewReason.UNCLEAR_ROLE: (
         "لا تدل صياغة البند بوضوح على أن هذا الرقم هو المقدار الذي يحدده النظام"
+    ),
+    ReviewReason.CONDITION_CONTRADICTED: (
+        "المدة ضمن الحد، لكن البند يذكر ما قد يخالف شرطاً آخر في المادة (مثل الأجر الكامل)"
     ),
     ReviewReason.ARTICLE_UNDER_REVIEW: (
         "نص المادة النافذ قيد المراجعة لأن تعديلاً جزئياً عليها لم يُطبق آلياً"
@@ -117,7 +121,20 @@ _CAP_AFTER_PHRASES = (
     "بما في ذلك",
     "بما فيها",
 )
-_EXTENSION_PHRASES = ("تمديد", "تمديدها", "التمديد", "يمدد", "تمدد", "تجديدها", "التجديد")
+_EXTENSION_PHRASES = (
+    "تمديد",
+    "تمديدها",
+    "تمديده",
+    "التمديد",
+    "يمدد",
+    "تمدد",
+    "نمدد",
+    "يمددها",
+    "نمددها",
+    "تمددها",
+    "تجديدها",
+    "التجديد",
+)
 _SAME_LENGTH_PHRASES = ("مماثلة", "مماثله")
 # Commas and sentence ends, but not the point in "7.5".
 _PHRASE_BREAK = re.compile(r"[،,;؛\n]|\.(?!\d)")
@@ -181,6 +198,10 @@ class Rule:
         exception_margin: For a ceiling, values up to ``limit + margin`` are
             review needed rather than a violation (an exception may apply).
         cumulative: The law limits a total (probation): extensions add up.
+        blocks_compliant: Words that contradict another condition of the
+            article (``"نصف أجرها"`` against "بأجر كامل"); with them a
+            would-be compliant verdict becomes review needed, because a
+            number within the limit is not a clean bill on its own.
     """
 
     rule_id: str
@@ -202,6 +223,7 @@ class Rule:
     blocks_violation: tuple[str, ...] = ()
     exception_margin: float = 0.0
     cumulative: bool = False
+    blocks_compliant: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         """Reject rules that could never fire or never compare."""
@@ -539,6 +561,12 @@ def _apply(rule: Rule, context: _Context) -> Finding | None:
     kind, reason, judged = _judge(rule, context, candidates)
     if kind is FindingKind.VIOLATION:
         kind, reason = _guard_violation(rule, context, groups, judged)
+    elif (
+        kind is FindingKind.COMPLIANT
+        and rule.blocks_compliant
+        and context.has(rule.blocks_compliant)
+    ):
+        kind, reason = FindingKind.REVIEW_NEEDED, ReviewReason.CONDITION_CONTRADICTED
     if rule.article_status is ArticleStatus.REVIEW_NEEDED:
         kind, reason = FindingKind.REVIEW_NEEDED, ReviewReason.ARTICLE_UNDER_REVIEW
     return Finding(rule, kind, judged, _message(rule, kind, judged, reason), reason)

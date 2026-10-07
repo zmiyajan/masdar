@@ -444,6 +444,15 @@ mark {
 }
 .check__title { margin: 0 0 0.5rem; font-size: 1.375rem; font-weight: 600; }
 .check__lede { margin: 0 0 1rem; color: var(--muted); max-width: var(--measure); }
+.check__caveat {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  background: var(--amended-soft);
+  border-radius: var(--radius-control);
+  max-width: var(--measure);
+}
 .check__input {
   display: block;
   width: 100%;

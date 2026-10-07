@@ -250,3 +250,48 @@ informed by a blind clause. The other blind-3 misses (a bare `أسبوع`, a sic
 months, a hajj clause with a condition word, a fixed-term non-renewal notice) are silence or
 "review needed" and were left as they are. As before, the recorded row is measured on clauses
 that shaped the code; the fresh blind v2 set is the real test.
+
+## Blind measurement (v2): the published number
+
+After v2 lifted blind v1 to violation recall 0.80 (that set had informed the v2 fixes by failure
+type, so it was no longer blind), a third author wrote `data/gold/clauses.blind.v2.jsonl`: 50
+clauses in deliberately varied house styles (government-contractor formal, startup plain,
+translated, shift policies, flattened tables, numbers in a separate sentence). Measured once,
+before any change:
+
+| Verdict | Precision | Recall |
+|---|---|---|
+| violation | **1.00** (5/5) | **0.28** (5/18) |
+| compliant | 0.83 (20/24) | 0.87 (20/23) |
+| review_needed | 0.50 (2/4) | 0.18 (2/11) |
+
+Exact-clause accuracy 0.52. **This is the honest estimate for the shipped checker.**
+
+What it shows:
+- **A flag is reliable; silence is not.** Across both blind sets the checker never called a
+  compliant clause a violation (10/10). But recall did not travel: the v2 fixes, which doubled
+  the development set, lifted blind v1 and still found only 28% of new authors' violations.
+  Hand-written cues learn the wording types they were shown. A third fix-and-measure round would
+  repeat the pattern, so the loop stops here.
+- **False reassurance is the second failure mode.** Two "compliant" verdicts were wrong in a way
+  that matters: 12 weeks of maternity leave *at half pay* (the article requires full pay), and a
+  4-month probation "extendable by two months" in the next sentence (the total straddles 180
+  days, which this ADR already says must be review needed). Both broke written policy, so both
+  were fixed generically, without tuning on the set: a rule can now list words that contradict
+  another condition of its article (`blocks_compliant`), and extension verbs in dialect
+  ("نمددها") keep a total open. Compliant precision is now held at 1.0 on the development set,
+  next to violation precision.
+
+After those two fixes (informed by v2, so not blind): compliant precision 0.91 (20/22),
+review-needed recall 0.27; violation precision 1.00, recall 0.28 unchanged. The remaining two
+"compliant" verdicts are true statements about the general limit in clauses about Ramadan hours
+(6 ≤ 8 hours a day), not reassurance about the Ramadan limit itself.
+
+**Contested labels** (one annotator, unreviewed): b2-021 expects a weekly violation from 9 hours ×
+6 days, a total the clause never states; b2-017 and b2-018 expect the 5-year rule from "after 7
+years" and "regardless of service"; b2-027 names Ramadan only as "شهر الصيام". The numbers above
+keep these labels as written.
+
+**Consequence for the product:** the UI, API and MCP tool say that a flagged clause cites the
+article it breaks, that "compliant" means only that the stated number is within the limit, and
+that a clause with no flag has not been cleared.

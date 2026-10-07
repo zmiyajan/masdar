@@ -46,6 +46,7 @@ class Settings(BaseSettings):
         default_factory=lambda: {
             "development": Path("data/gold/clauses.v1.jsonl"),
             "blind-v1": Path("data/gold/clauses.blind.v1.jsonl"),
+            "blind-v2": Path("data/gold/clauses.blind.v2.jsonl"),
         }
     )
     crawl_delay_seconds: float = Field(
