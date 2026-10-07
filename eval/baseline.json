@@ -1,0 +1,12 @@
+{
+  "gold_version": "v1",
+  "overall": {
+    "mrr_at_10": 0.7922,
+    "ndcg_at_10": 0.7965,
+    "recall_at_1": 0.6463,
+    "recall_at_10": 0.8902,
+    "recall_at_3": 0.7439,
+    "recall_at_5": 0.811
+  },
+  "pipeline": "bm25"
+}

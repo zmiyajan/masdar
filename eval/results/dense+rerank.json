@@ -1,0 +1,2211 @@
+{
+  "by_law": [
+    {
+      "group": "labor-law",
+      "mrr_at_10": 0.9026,
+      "ndcg_at_10": 0.9092,
+      "queries": 55,
+      "recall_at_1": 0.7091,
+      "recall_at_10": 0.9727,
+      "recall_at_3": 0.9,
+      "recall_at_5": 0.9364
+    },
+    {
+      "group": "pdpl",
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.9771,
+      "queries": 14,
+      "recall_at_1": 0.8929,
+      "recall_at_10": 0.9643,
+      "recall_at_3": 0.9643,
+      "recall_at_5": 0.9643
+    },
+    {
+      "group": "companies-law",
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.9816,
+      "queries": 13,
+      "recall_at_1": 0.9615,
+      "recall_at_10": 0.9615,
+      "recall_at_3": 0.9615,
+      "recall_at_5": 0.9615
+    }
+  ],
+  "by_style": [
+    {
+      "group": "formal",
+      "mrr_at_10": 0.965,
+      "ndcg_at_10": 0.9591,
+      "queries": 50,
+      "recall_at_1": 0.83,
+      "recall_at_10": 0.98,
+      "recall_at_3": 0.96,
+      "recall_at_5": 0.97
+    },
+    {
+      "group": "dialect",
+      "mrr_at_10": 0.951,
+      "ndcg_at_10": 0.9234,
+      "queries": 17,
+      "recall_at_1": 0.7941,
+      "recall_at_10": 0.9118,
+      "recall_at_3": 0.8529,
+      "recall_at_5": 0.8824
+    },
+    {
+      "group": "paraphrase",
+      "mrr_at_10": 0.8151,
+      "ndcg_at_10": 0.853,
+      "queries": 15,
+      "recall_at_1": 0.6,
+      "recall_at_10": 1.0,
+      "recall_at_3": 0.8667,
+      "recall_at_5": 0.9333
+    }
+  ],
+  "gold_version": "v1",
+  "overall": {
+    "mrr_at_10": 0.9347,
+    "ndcg_at_10": 0.9323,
+    "recall_at_1": 0.7805,
+    "recall_at_10": 0.9695,
+    "recall_at_3": 0.9207,
+    "recall_at_5": 0.9451
+  },
+  "per_query": [
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q001",
+      "ranking": [
+        "labor-law:53",
+        "labor-law:54",
+        "labor-law:116",
+        "labor-law:179",
+        "labor-law:88",
+        "labor-law:69",
+        "labor-law:151",
+        "labor-law:100",
+        "companies-law:253",
+        "labor-law:25"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q002",
+      "ranking": [
+        "labor-law:54",
+        "labor-law:53",
+        "labor-law:115",
+        "companies-law:41",
+        "companies-law:53",
+        "companies-law:211",
+        "labor-law:65",
+        "companies-law:213",
+        "companies-law:260",
+        "labor-law:16"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q003",
+      "ranking": [
+        "labor-law:54",
+        "labor-law:88",
+        "labor-law:84",
+        "labor-law:85",
+        "labor-law:87",
+        "labor-law:77",
+        "labor-law:18",
+        "labor-law:64",
+        "labor-law:53",
+        "labor-law:82"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q004",
+      "ranking": [
+        "labor-law:75",
+        "labor-law:76",
+        "labor-law:74",
+        "labor-law:77",
+        "labor-law:55",
+        "labor-law:88",
+        "labor-law:83",
+        "labor-law:53",
+        "labor-law:37",
+        "labor-law:116"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 6,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 0.1667,
+      "ndcg_at_10": 0.2708,
+      "query_id": "q005",
+      "ranking": [
+        "labor-law:117",
+        "labor-law:109",
+        "labor-law:151",
+        "companies-law:69",
+        "labor-law:76",
+        "labor-law:75",
+        "labor-law:72",
+        "companies-law:43",
+        "labor-law:80",
+        "companies-law:248"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.5,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 4,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 0.25,
+      "ndcg_at_10": 0.3274,
+      "query_id": "q006",
+      "ranking": [
+        "pdpl:40",
+        "labor-law:80",
+        "labor-law:77",
+        "labor-law:76",
+        "labor-law:81",
+        "labor-law:87",
+        "labor-law:231",
+        "companies-law:260",
+        "labor-law:176",
+        "companies-law:262"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_10": 0.5,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.5,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q007",
+      "ranking": [
+        "labor-law:77",
+        "labor-law:85",
+        "labor-law:182",
+        "labor-law:75",
+        "labor-law:87",
+        "labor-law:40",
+        "labor-law:80",
+        "labor-law:137",
+        "companies-law:260",
+        "labor-law:88"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q008",
+      "ranking": [
+        "labor-law:80",
+        "labor-law:182",
+        "labor-law:81",
+        "labor-law:75",
+        "labor-law:54",
+        "labor-law:51",
+        "labor-law:48",
+        "labor-law:116",
+        "labor-law:77",
+        "labor-law:106"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q009",
+      "ranking": [
+        "labor-law:81",
+        "labor-law:80",
+        "labor-law:88",
+        "labor-law:113",
+        "labor-law:111",
+        "labor-law:116",
+        "labor-law:109",
+        "labor-law:61",
+        "labor-law:114",
+        "labor-law:151"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.9502,
+      "query_id": "q010",
+      "ranking": [
+        "labor-law:84",
+        "labor-law:86",
+        "labor-law:85",
+        "labor-law:88",
+        "labor-law:64",
+        "labor-law:110",
+        "labor-law:96",
+        "labor-law:109",
+        "labor-law:18",
+        "labor-law:77"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.9072,
+      "query_id": "q011",
+      "ranking": [
+        "labor-law:85",
+        "labor-law:138",
+        "labor-law:109",
+        "labor-law:77",
+        "labor-law:84",
+        "labor-law:117",
+        "labor-law:87",
+        "labor-law:88",
+        "labor-law:79-bis",
+        "labor-law:137"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 0.5,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q012",
+      "ranking": [
+        "labor-law:87",
+        "labor-law:85",
+        "labor-law:113",
+        "labor-law:160",
+        "labor-law:151",
+        "labor-law:84",
+        "labor-law:88",
+        "labor-law:111",
+        "labor-law:86",
+        "labor-law:77"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q013",
+      "ranking": [
+        "labor-law:79-bis",
+        "labor-law:72",
+        "labor-law:85",
+        "labor-law:80",
+        "labor-law:155",
+        "labor-law:75",
+        "labor-law:32",
+        "labor-law:91",
+        "labor-law:118",
+        "labor-law:81"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q014",
+      "ranking": [
+        "labor-law:79-bis",
+        "companies-law:99",
+        "companies-law:248",
+        "companies-law:30",
+        "companies-law:69",
+        "companies-law:244",
+        "labor-law:72",
+        "companies-law:259",
+        "labor-law:85",
+        "companies-law:253"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q015",
+      "ranking": [
+        "labor-law:88",
+        "labor-law:110",
+        "labor-law:84",
+        "labor-law:109",
+        "labor-law:77",
+        "labor-law:83",
+        "labor-law:91",
+        "labor-law:75",
+        "labor-law:54",
+        "labor-law:85"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 2,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.6063,
+      "query_id": "q016",
+      "ranking": [
+        "labor-law:106",
+        "labor-law:98",
+        "labor-law:100",
+        "labor-law:99",
+        "labor-law:188",
+        "labor-law:164",
+        "labor-law:101",
+        "labor-law:6",
+        "labor-law:104",
+        "labor-law:179"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q017",
+      "ranking": [
+        "labor-law:98",
+        "labor-law:164",
+        "labor-law:163",
+        "labor-law:104",
+        "labor-law:117",
+        "labor-law:179",
+        "labor-law:99",
+        "labor-law:245",
+        "labor-law:25",
+        "pdpl:43"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 4,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 0.25,
+      "ndcg_at_10": 0.4307,
+      "query_id": "q018",
+      "ranking": [
+        "labor-law:28",
+        "labor-law:84",
+        "labor-law:92",
+        "labor-law:107",
+        "labor-law:96",
+        "labor-law:114",
+        "labor-law:19",
+        "companies-law:125",
+        "labor-law:90",
+        "labor-law:113"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.9502,
+      "query_id": "q019",
+      "ranking": [
+        "labor-law:109",
+        "labor-law:114",
+        "labor-law:110",
+        "labor-law:113",
+        "labor-law:117",
+        "labor-law:115",
+        "labor-law:116",
+        "labor-law:53",
+        "labor-law:151",
+        "labor-law:98"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q020",
+      "ranking": [
+        "labor-law:110",
+        "labor-law:109",
+        "labor-law:117",
+        "labor-law:114",
+        "labor-law:113",
+        "labor-law:115",
+        "labor-law:151",
+        "labor-law:155",
+        "labor-law:2",
+        "labor-law:75"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q021",
+      "ranking": [
+        "labor-law:111",
+        "labor-law:109",
+        "labor-law:137",
+        "labor-law:157",
+        "labor-law:154",
+        "labor-law:2",
+        "labor-law:104",
+        "labor-law:88",
+        "labor-law:118",
+        "labor-law:18"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q022",
+      "ranking": [
+        "labor-law:113",
+        "labor-law:160",
+        "labor-law:151",
+        "labor-law:114",
+        "labor-law:109",
+        "labor-law:53",
+        "labor-law:117",
+        "labor-law:75",
+        "labor-law:155",
+        "labor-law:87"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q023",
+      "ranking": [
+        "labor-law:113",
+        "labor-law:160",
+        "labor-law:151",
+        "labor-law:53",
+        "labor-law:109",
+        "labor-law:114",
+        "labor-law:155",
+        "labor-law:117",
+        "labor-law:97",
+        "labor-law:75"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q024",
+      "ranking": [
+        "labor-law:114",
+        "labor-law:117",
+        "labor-law:113",
+        "labor-law:109",
+        "labor-law:151",
+        "labor-law:160",
+        "labor-law:110",
+        "labor-law:116",
+        "labor-law:115",
+        "labor-law:75"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q025",
+      "ranking": [
+        "labor-law:115",
+        "labor-law:114",
+        "labor-law:155",
+        "labor-law:111",
+        "labor-law:118",
+        "labor-law:113",
+        "labor-law:110",
+        "labor-law:109",
+        "labor-law:117",
+        "labor-law:165"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q026",
+      "ranking": [
+        "labor-law:117",
+        "labor-law:82",
+        "labor-law:151",
+        "labor-law:154",
+        "labor-law:165",
+        "labor-law:155",
+        "labor-law:136",
+        "labor-law:113",
+        "labor-law:114",
+        "labor-law:109"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.9502,
+      "query_id": "q027",
+      "ranking": [
+        "labor-law:82",
+        "labor-law:155",
+        "labor-law:117",
+        "labor-law:140",
+        "labor-law:79",
+        "labor-law:137",
+        "labor-law:133",
+        "labor-law:139",
+        "labor-law:124",
+        "labor-law:88"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 7,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 0.1429,
+      "ndcg_at_10": 0.3333,
+      "query_id": "q028",
+      "ranking": [
+        "labor-law:113",
+        "labor-law:109",
+        "labor-law:114",
+        "labor-law:53",
+        "labor-law:116",
+        "labor-law:155",
+        "labor-law:151",
+        "labor-law:117",
+        "labor-law:110",
+        "labor-law:160"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q029",
+      "ranking": [
+        "labor-law:154",
+        "labor-law:151",
+        "labor-law:155",
+        "labor-law:113",
+        "labor-law:160",
+        "labor-law:87",
+        "labor-law:157",
+        "labor-law:85",
+        "labor-law:54",
+        "labor-law:109"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q030",
+      "ranking": [
+        "labor-law:155",
+        "labor-law:78",
+        "labor-law:153",
+        "labor-law:154",
+        "labor-law:109",
+        "labor-law:48",
+        "labor-law:60",
+        "labor-law:193",
+        "labor-law:113",
+        "labor-law:157"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q031",
+      "ranking": [
+        "labor-law:160",
+        "labor-law:113",
+        "labor-law:151",
+        "labor-law:155",
+        "labor-law:154",
+        "labor-law:87",
+        "labor-law:109",
+        "labor-law:53",
+        "labor-law:157",
+        "labor-law:85"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 3,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.7602,
+      "query_id": "q032",
+      "ranking": [
+        "labor-law:92",
+        "labor-law:157",
+        "labor-law:93",
+        "labor-law:97",
+        "labor-law:94",
+        "labor-law:116",
+        "labor-law:114",
+        "labor-law:88",
+        "labor-law:118",
+        "labor-law:113"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.7602,
+      "query_id": "q033",
+      "ranking": [
+        "labor-law:92",
+        "labor-law:116",
+        "labor-law:94",
+        "companies-law:45",
+        "companies-law:222",
+        "labor-law:81",
+        "companies-law:64",
+        "labor-law:80",
+        "companies-law:175",
+        "companies-law:15"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 0.5,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q034",
+      "ranking": [
+        "labor-law:58",
+        "labor-law:59",
+        "labor-law:60",
+        "labor-law:105",
+        "labor-law:92",
+        "labor-law:18",
+        "labor-law:40",
+        "labor-law:54",
+        "labor-law:80",
+        "labor-law:94"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q035",
+      "ranking": [
+        "labor-law:66",
+        "labor-law:70",
+        "labor-law:71",
+        "labor-law:69",
+        "labor-law:67",
+        "labor-law:80",
+        "labor-law:73",
+        "labor-law:72",
+        "labor-law:118",
+        "labor-law:116"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q036",
+      "ranking": [
+        "labor-law:69",
+        "labor-law:68",
+        "labor-law:71",
+        "labor-law:70",
+        "labor-law:83",
+        "labor-law:60",
+        "companies-law:267",
+        "labor-law:91",
+        "labor-law:155",
+        "labor-law:72"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 3,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 0.3333,
+      "ndcg_at_10": 0.5,
+      "query_id": "q037",
+      "ranking": [
+        "labor-law:60",
+        "labor-law:106",
+        "labor-law:83",
+        "labor-law:87",
+        "labor-law:88",
+        "labor-law:110",
+        "labor-law:81",
+        "labor-law:234",
+        "labor-law:91",
+        "labor-law:8"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q038",
+      "ranking": [
+        "labor-law:51",
+        "labor-law:37",
+        "labor-law:46",
+        "companies-law:8",
+        "labor-law:80",
+        "labor-law:52",
+        "labor-law:116",
+        "labor-law:74",
+        "labor-law:72",
+        "labor-law:75"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q039",
+      "ranking": [
+        "labor-law:37",
+        "labor-law:55",
+        "labor-law:77",
+        "labor-law:76",
+        "labor-law:75",
+        "labor-law:74",
+        "labor-law:7",
+        "labor-law:25",
+        "labor-law:53",
+        "labor-law:60"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q040",
+      "ranking": [
+        "labor-law:40",
+        "labor-law:174",
+        "labor-law:33",
+        "labor-law:133",
+        "labor-law:19",
+        "labor-law:84",
+        "labor-law:109",
+        "labor-law:181",
+        "labor-law:90",
+        "labor-law:58"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q041",
+      "ranking": [
+        "labor-law:38",
+        "labor-law:33",
+        "labor-law:160",
+        "labor-law:60",
+        "labor-law:118",
+        "labor-law:35",
+        "labor-law:40",
+        "labor-law:30",
+        "labor-law:98",
+        "labor-law:34"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q042",
+      "ranking": [
+        "labor-law:64",
+        "labor-law:83",
+        "labor-law:79",
+        "labor-law:88",
+        "labor-law:54",
+        "labor-law:40",
+        "labor-law:80",
+        "labor-law:48",
+        "labor-law:110",
+        "labor-law:75"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q043",
+      "ranking": [
+        "labor-law:104",
+        "labor-law:105",
+        "labor-law:109",
+        "labor-law:106",
+        "labor-law:88",
+        "labor-law:151",
+        "labor-law:117",
+        "labor-law:59",
+        "labor-law:154",
+        "labor-law:164"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q044",
+      "ranking": [
+        "labor-law:162",
+        "labor-law:164",
+        "labor-law:163",
+        "labor-law:161",
+        "labor-law:167",
+        "labor-law:166",
+        "labor-law:2",
+        "labor-law:106",
+        "labor-law:53",
+        "labor-law:109"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q045",
+      "ranking": [
+        "labor-law:18",
+        "labor-law:56",
+        "labor-law:16",
+        "companies-law:222",
+        "companies-law:223",
+        "labor-law:91",
+        "companies-law:172",
+        "companies-law:211",
+        "companies-law:8",
+        "companies-law:220"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q046",
+      "ranking": [
+        "labor-law:79",
+        "labor-law:74",
+        "companies-law:50",
+        "labor-law:75",
+        "labor-law:137",
+        "labor-law:48",
+        "labor-law:88",
+        "companies-law:212",
+        "labor-law:113",
+        "labor-law:80"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q047",
+      "ranking": [
+        "labor-law:8",
+        "labor-law:81",
+        "labor-law:80",
+        "labor-law:83",
+        "labor-law:88",
+        "labor-law:79-bis",
+        "labor-law:87",
+        "labor-law:18",
+        "labor-law:48",
+        "labor-law:60"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q048",
+      "ranking": [
+        "labor-law:138",
+        "labor-law:137",
+        "labor-law:29",
+        "labor-law:77",
+        "labor-law:136",
+        "companies-law:258",
+        "labor-law:140",
+        "labor-law:133",
+        "labor-law:85",
+        "companies-law:28"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q049",
+      "ranking": [
+        "labor-law:137",
+        "labor-law:29",
+        "labor-law:138",
+        "labor-law:117",
+        "labor-law:2",
+        "labor-law:133",
+        "labor-law:77",
+        "labor-law:19",
+        "labor-law:87",
+        "labor-law:88"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q050",
+      "ranking": [
+        "labor-law:159",
+        "labor-law:146",
+        "labor-law:153",
+        "labor-law:154",
+        "labor-law:113",
+        "labor-law:151",
+        "labor-law:160",
+        "labor-law:88",
+        "labor-law:109",
+        "labor-law:104"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q051",
+      "ranking": [
+        "labor-law:234",
+        "labor-law:69",
+        "labor-law:79-bis",
+        "labor-law:235",
+        "labor-law:60",
+        "labor-law:72",
+        "labor-law:83",
+        "labor-law:53",
+        "labor-law:116",
+        "labor-law:54"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q052",
+      "ranking": [
+        "labor-law:229",
+        "labor-law:229-bis",
+        "companies-law:262",
+        "labor-law:70",
+        "labor-law:230",
+        "companies-law:261",
+        "labor-law:7",
+        "pdpl:36",
+        "pdpl:35",
+        "companies-law:260"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q053",
+      "ranking": [
+        "labor-law:55",
+        "labor-law:37",
+        "labor-law:75",
+        "labor-law:74",
+        "labor-law:76",
+        "labor-law:56",
+        "labor-law:77",
+        "labor-law:116",
+        "companies-law:221",
+        "companies-law:16"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 2,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.6309,
+      "query_id": "q054",
+      "ranking": [
+        "labor-law:148",
+        "labor-law:26",
+        "labor-law:154",
+        "labor-law:107",
+        "labor-law:85",
+        "labor-law:121",
+        "labor-law:137",
+        "labor-law:105",
+        "labor-law:101",
+        "labor-law:109"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 2,
+      "laws": [
+        "labor-law"
+      ],
+      "mrr_at_10": 0.5,
+      "ndcg_at_10": 0.6309,
+      "query_id": "q055",
+      "ranking": [
+        "labor-law:109",
+        "labor-law:74",
+        "labor-law:113",
+        "labor-law:110",
+        "labor-law:162",
+        "labor-law:115",
+        "labor-law:49",
+        "labor-law:160",
+        "pdpl:43",
+        "companies-law:281"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q056",
+      "ranking": [
+        "pdpl:29",
+        "companies-law:20",
+        "pdpl:13",
+        "companies-law:237",
+        "pdpl:2",
+        "companies-law:18",
+        "pdpl:31",
+        "pdpl:33",
+        "pdpl:10",
+        "companies-law:112"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q057",
+      "ranking": [
+        "pdpl:4",
+        "pdpl:24",
+        "pdpl:23",
+        "pdpl:13",
+        "pdpl:34",
+        "pdpl:21",
+        "pdpl:41",
+        "pdpl:3",
+        "pdpl:12",
+        "pdpl:1"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.9197,
+      "query_id": "q058",
+      "ranking": [
+        "pdpl:5",
+        "pdpl:27",
+        "pdpl:6",
+        "pdpl:26",
+        "pdpl:10",
+        "pdpl:14",
+        "pdpl:7",
+        "pdpl:15",
+        "pdpl:24",
+        "pdpl:34"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q059",
+      "ranking": [
+        "pdpl:20",
+        "pdpl:41",
+        "companies-law:253",
+        "pdpl:16",
+        "pdpl:4",
+        "companies-law:9",
+        "companies-law:242",
+        "pdpl:19",
+        "pdpl:33",
+        "pdpl:18"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q060",
+      "ranking": [
+        "pdpl:18",
+        "pdpl:27",
+        "pdpl:15",
+        "pdpl:11",
+        "pdpl:10",
+        "pdpl:16",
+        "pdpl:26",
+        "pdpl:29",
+        "pdpl:5",
+        "pdpl:41"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q061",
+      "ranking": [
+        "pdpl:12",
+        "pdpl:1",
+        "pdpl:23",
+        "pdpl:3",
+        "pdpl:4",
+        "pdpl:26",
+        "pdpl:16",
+        "pdpl:33",
+        "pdpl:24",
+        "pdpl:19"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q062",
+      "ranking": [
+        "pdpl:15",
+        "pdpl:29",
+        "pdpl:27",
+        "pdpl:18",
+        "pdpl:10",
+        "pdpl:16",
+        "pdpl:9",
+        "pdpl:26",
+        "pdpl:13",
+        "pdpl:35"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.7602,
+      "query_id": "q063",
+      "ranking": [
+        "pdpl:25",
+        "companies-law:149",
+        "labor-law:25",
+        "companies-law:91",
+        "companies-law:135",
+        "companies-law:102",
+        "pdpl:21",
+        "companies-law:227",
+        "companies-law:29",
+        "companies-law:166"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 0.5,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q064",
+      "ranking": [
+        "pdpl:35",
+        "companies-law:260",
+        "companies-law:261",
+        "pdpl:36",
+        "pdpl:26",
+        "pdpl:15",
+        "pdpl:16",
+        "pdpl:10",
+        "pdpl:4",
+        "companies-law:262"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q065",
+      "ranking": [
+        "pdpl:22",
+        "pdpl:14",
+        "pdpl:41",
+        "pdpl:6",
+        "pdpl:17",
+        "pdpl:26",
+        "pdpl:33",
+        "pdpl:5",
+        "pdpl:27",
+        "pdpl:29"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q066",
+      "ranking": [
+        "pdpl:28",
+        "labor-law:165",
+        "companies-law:5",
+        "labor-law:23",
+        "pdpl:29",
+        "pdpl:4",
+        "labor-law:81",
+        "companies-law:3",
+        "companies-law:237",
+        "companies-law:195"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q067",
+      "ranking": [
+        "pdpl:8",
+        "pdpl:33",
+        "pdpl:30",
+        "pdpl:14",
+        "pdpl:22",
+        "pdpl:19",
+        "pdpl:13",
+        "pdpl:12",
+        "pdpl:9",
+        "pdpl:10"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q068",
+      "ranking": [
+        "pdpl:41",
+        "pdpl:18",
+        "labor-law:64",
+        "labor-law:83",
+        "labor-law:88",
+        "pdpl:4",
+        "labor-law:110",
+        "pdpl:23",
+        "pdpl:5",
+        "pdpl:16"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "pdpl"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q069",
+      "ranking": [
+        "pdpl:26",
+        "pdpl:25",
+        "pdpl:10",
+        "pdpl:27",
+        "pdpl:7",
+        "pdpl:29",
+        "companies-law:192",
+        "pdpl:11",
+        "pdpl:18",
+        "pdpl:15"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q070",
+      "ranking": [
+        "companies-law:4",
+        "companies-law:198",
+        "companies-law:215",
+        "companies-law:231",
+        "companies-law:108",
+        "companies-law:202",
+        "companies-law:221",
+        "companies-law:216",
+        "companies-law:7",
+        "companies-law:235"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q071",
+      "ranking": [
+        "companies-law:157",
+        "companies-law:200",
+        "companies-law:158",
+        "companies-law:156",
+        "companies-law:150",
+        "companies-law:184",
+        "companies-law:7",
+        "companies-law:212",
+        "companies-law:9",
+        "companies-law:162"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q072",
+      "ranking": [
+        "companies-law:182",
+        "companies-law:132",
+        "companies-law:176",
+        "companies-law:139",
+        "companies-law:179",
+        "companies-law:165",
+        "companies-law:102",
+        "companies-law:158",
+        "companies-law:157",
+        "companies-law:134"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q073",
+      "ranking": [
+        "companies-law:132",
+        "companies-law:182",
+        "companies-law:139",
+        "companies-law:60",
+        "companies-law:102",
+        "companies-law:59",
+        "companies-law:127",
+        "companies-law:134",
+        "companies-law:22",
+        "companies-law:176"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q074",
+      "ranking": [
+        "companies-law:92",
+        "companies-law:93",
+        "companies-law:145",
+        "companies-law:101",
+        "companies-law:88",
+        "companies-law:85",
+        "companies-law:87",
+        "companies-law:97",
+        "companies-law:168",
+        "companies-law:100"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q075",
+      "ranking": [
+        "companies-law:27",
+        "companies-law:81",
+        "companies-law:71",
+        "companies-law:95",
+        "companies-law:73",
+        "companies-law:79",
+        "companies-law:69",
+        "companies-law:26",
+        "companies-law:68",
+        "companies-law:28"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q076",
+      "ranking": [
+        "companies-law:76",
+        "companies-law:28",
+        "companies-law:26",
+        "companies-law:267",
+        "companies-law:68",
+        "companies-law:125",
+        "companies-law:77",
+        "companies-law:207",
+        "companies-law:67",
+        "companies-law:83"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q077",
+      "ranking": [
+        "companies-law:164",
+        "companies-law:163",
+        "companies-law:43",
+        "companies-law:42",
+        "companies-law:167",
+        "companies-law:157",
+        "companies-law:160",
+        "companies-law:162",
+        "companies-law:184",
+        "companies-law:165"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "dialect"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q078",
+      "ranking": [
+        "companies-law:11",
+        "companies-law:218",
+        "companies-law:17",
+        "companies-law:213",
+        "companies-law:8",
+        "companies-law:3",
+        "companies-law:7",
+        "companies-law:27",
+        "labor-law:7",
+        "companies-law:274"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "paraphrase"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q079",
+      "ranking": [
+        "companies-law:225",
+        "companies-law:226",
+        "companies-law:228",
+        "companies-law:229",
+        "companies-law:227",
+        "companies-law:221",
+        "companies-law:9",
+        "companies-law:274",
+        "companies-law:11",
+        "companies-law:253"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 0.7602,
+      "query_id": "q080",
+      "ranking": [
+        "companies-law:244",
+        "companies-law:246",
+        "companies-law:245",
+        "companies-law:247",
+        "companies-law:249",
+        "companies-law:253",
+        "companies-law:242",
+        "companies-law:257",
+        "companies-law:252",
+        "companies-law:254"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_10": 0.5,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q081",
+      "ranking": [
+        "companies-law:260",
+        "companies-law:261",
+        "pdpl:35",
+        "companies-law:262",
+        "companies-law:253",
+        "companies-law:20",
+        "companies-law:8",
+        "companies-law:267",
+        "companies-law:12",
+        "companies-law:218"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    },
+    {
+      "first_answer_rank": 1,
+      "laws": [
+        "companies-law"
+      ],
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "query_id": "q082",
+      "ranking": [
+        "companies-law:22",
+        "companies-law:175",
+        "companies-law:11",
+        "companies-law:125",
+        "companies-law:33",
+        "companies-law:124",
+        "companies-law:13",
+        "companies-law:211",
+        "companies-law:194",
+        "companies-law:123"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "style": "formal"
+    }
+  ],
+  "pipeline": "dense+rerank",
+  "queries": 82
+}
