@@ -77,18 +77,16 @@ def test_search_input_has_a_label(page: _Collector) -> None:
     assert "q" in labels
 
 
-@pytest.mark.parametrize(
-    "question",
-    [
-        "كم مدة إجازة الأمومة؟",
-        "هل يجوز نقل بيانات العملاء خارج المملكة؟",
-        "كيف تحسب مكافأة نهاية الخدمة؟",
-        "ما أشكال الشركات في النظام؟",
-    ],
-)
-def test_example_questions(question: str) -> None:
-    assert f'data-question="{question}"' in INDEX
+def test_example_questions_are_offered() -> None:
+    # Which examples answer and which are refused is checked against the real
+    # models in tests/integration/test_demo_examples.py.
+    assert len(example_questions()) >= 4
 
 
 def test_links_to_the_repository() -> None:
     assert "https://github.com/zmiyajan/masdar" in INDEX
+
+
+def example_questions() -> list[str]:
+    """The questions on the example chips, in page order."""
+    return re.findall(r'data-question="([^"]+)"', INDEX)

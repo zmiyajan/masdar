@@ -5,6 +5,7 @@ adapters they run with, and tests can wire fakes the same way.
 """
 
 import importlib.util
+import json
 import ssl
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
@@ -18,16 +19,24 @@ from masdar.adapters.beir_writer import BeirDatasetWriter
 from masdar.adapters.bm25 import Bm25Retriever, arabic_analyzer, display_text, whitespace_analyzer
 from masdar.adapters.boe.client import BoeClient
 from masdar.adapters.boe.source import BoeLawSource
-from masdar.adapters.cross_encoder import DEFAULT_RERANK_CANDIDATES, CrossEncoderReranker
+from masdar.adapters.cross_encoder import (
+    DEFAULT_ANSWER_THRESHOLD,
+    DEFAULT_RERANK_CANDIDATES,
+    CrossEncoderReranker,
+)
 from masdar.adapters.dense import DenseRetriever
 from masdar.adapters.eval_writer import EvalResultsWriter
+from masdar.adapters.files import write_atomically
 from masdar.adapters.gold_jsonl import JsonlGoldSource
+from masdar.adapters.out_of_scope_jsonl import JsonlOutOfScopeSource
+from masdar.app.answer import AnswerService, measure_answers
 from masdar.app.build_dataset import BuildDataset
 from masdar.app.corpus import Corpus, load_corpus
 from masdar.app.evaluate import Evaluate
 from masdar.app.hybrid import HybridRetriever
 from masdar.app.search import SearchService
 from masdar.config import ROBOTS_CRAWL_DELAY_SECONDS, Settings
+from masdar.domain.answer import AnswerQualityReport
 from masdar.domain.arabic import ArabicNormalizer
 from masdar.domain.chunking import ChunkingOptions
 from masdar.domain.errors import MasdarError
@@ -232,3 +241,37 @@ def evaluate_use_case(settings: Settings) -> Evaluate:
 def eval_results_writer(eval_dir: Path) -> EvalResultsWriter:
     """Writes ``results/*.json``, ``RESULTS.md`` and ``baseline.json`` under ``eval_dir``."""
     return EvalResultsWriter(eval_dir)
+
+
+def answer_service(search: SearchService) -> AnswerService | None:
+    """Extractive answers on top of an already built search pipeline (ADR-0009).
+
+    The answer threshold is calibrated on the cross-encoder's logits, so answers
+    exist only for pipelines that rerank with it; for any other pipeline this
+    returns ``None`` and callers offer search alone. Reusing the reranker's
+    scorer means the model is loaded once.
+
+    Args:
+        search: The served pipeline, e.g. from `default_search_service`.
+    """
+    reranker = search.reranker
+    if not isinstance(reranker, CrossEncoderReranker):
+        return None
+    return AnswerService(search, reranker.scorer, threshold=DEFAULT_ANSWER_THRESHOLD)
+
+
+def answer_quality(settings: Settings, service: AnswerService) -> AnswerQualityReport:
+    """Measure ``service`` on the gold questions and the out-of-scope set."""
+    return measure_answers(
+        service,
+        JsonlGoldSource(settings.gold_path).load(),
+        JsonlOutOfScopeSource(settings.out_of_scope_path).load(),
+    )
+
+
+def save_answer_quality(report: AnswerQualityReport, eval_dir: Path) -> Path:
+    """Write ``answers.json`` next to the retrieval results; returns its path."""
+    path = eval_dir / "answers.json"
+    document = json.dumps(report.to_dict(), ensure_ascii=False, indent=2, sort_keys=True)
+    write_atomically(path, (document + "\n").encode("utf-8"))
+    return path

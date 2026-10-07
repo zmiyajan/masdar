@@ -1,11 +1,13 @@
 """MCP tools, called directly and through the server, with a fake retriever."""
 
 import asyncio
+from collections.abc import Sequence
 
 import pytest
 from mcp.server.mcpserver.exceptions import ToolError
 
 from entrypoints.entrypoint_fakes import ARTICLES, SOURCE_URLS, FakeRetriever
+from masdar.app.answer import AnswerService
 from masdar.app.search import SearchService
 from masdar.entrypoints.mcp_server import RegulationTools, build_server
 
@@ -87,3 +89,29 @@ class TestServer:
         assert structured is not None
         assert structured["citation"] == "نظام الشركات — المادة الثالثة"
         assert structured["status_label"] == "ساري"
+
+
+class _ConfidentScorer:
+    def score(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
+        return [5.0] * len(pairs)
+
+
+class TestAnswerQuestion:
+    def test_quotes_verbatim_and_is_registered_only_when_available(
+        self, service: SearchService
+    ) -> None:
+        answers = AnswerService(service, _ConfidentScorer(), threshold=0.0)
+        tools = RegulationTools(service, ARTICLES, SOURCE_URLS, answers)
+        response = tools.answer_question("كم مدة إجازة الوضع؟")
+        assert response.status == "answered"
+        assert response.quotes[0].sentence in response.results[0].text
+        with_answers = asyncio.run(
+            build_server(service, ARTICLES, SOURCE_URLS, answers).list_tools()
+        )
+        without = asyncio.run(build_server(service, ARTICLES, SOURCE_URLS).list_tools())
+        assert "answer_question" in {tool.name for tool in with_answers}
+        assert "answer_question" not in {tool.name for tool in without}
+
+    def test_unavailable_or_unknown_law_is_a_tool_error(self, tools: RegulationTools) -> None:
+        with pytest.raises(ToolError, match="not available"):
+            tools.answer_question("سؤال")

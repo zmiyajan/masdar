@@ -8,7 +8,7 @@ building it means indexing the whole corpus.
 
 import logging
 import math
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Any
@@ -20,17 +20,20 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from masdar import __version__
+from masdar.app.answer import AnswerService
 from masdar.app.search import SearchService
 from masdar.config import Settings
-from masdar.container import default_search_service
+from masdar.container import answer_service, default_search_service
 from masdar.domain.errors import InvalidDomainObjectError, MasdarError
 from masdar.domain.search import MAX_QUERY_CHARS
 from masdar.entrypoints.laws import LawSummary, load_law_summaries
 from masdar.entrypoints.schemas import (
+    AnswerResponse,
     ErrorBody,
     ErrorResponse,
     HealthResponse,
     SearchResponse,
+    to_answer,
     to_hit,
 )
 from masdar.entrypoints.security import RateLimiter, security_headers
@@ -50,6 +53,10 @@ class _UnknownLawError(MasdarError):
     """A ``law`` filter names a law that is not in the corpus."""
 
 
+class _AnswersUnavailableError(MasdarError):
+    """The served pipeline has no cross-encoder, so answers are not offered."""
+
+
 def _error(status: int, code: str, message: str, message_ar: str) -> JSONResponse:
     body = ErrorResponse(error=ErrorBody(code=code, message=message, message_ar=message_ar))
     return JSONResponse(body.model_dump(), status_code=status)
@@ -59,6 +66,7 @@ def create_app(
     service: SearchService | None = None,
     settings: Settings | None = None,
     *,
+    answers: AnswerService | None = None,
     rate_limiter: RateLimiter | None = None,
 ) -> FastAPI:
     """Build the FastAPI application.
@@ -67,6 +75,8 @@ def create_app(
         service: The search pipeline; built from the container at startup
             when omitted (production). Tests inject one.
         settings: Settings; read from the environment when omitted.
+        answers: The answer service; derived from ``service`` when omitted
+            (none for pipelines without a cross-encoder). Tests inject one.
         rate_limiter: Per-client limit for ``/api`` routes; 30 requests a
             minute when omitted.
     """
@@ -79,6 +89,7 @@ def create_app(
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # Indexing is CPU-bound and slow; a worker thread keeps the loop free.
         app.state.service = service or await to_thread.run_sync(default_search_service, config)
+        app.state.answers = answers if answers is not None else answer_service(app.state.service)
         yield
 
     app = FastAPI(
@@ -96,7 +107,11 @@ def create_app(
     def health(request: Request) -> HealthResponse:
         """Liveness probe; also names the retrieval pipeline being served."""
         current: SearchService = request.app.state.service
-        return HealthResponse(pipeline=current.name, version=__version__)
+        return HealthResponse(
+            pipeline=current.name,
+            answers=request.app.state.answers is not None,
+            version=__version__,
+        )
 
     @app.get("/api/laws", response_model=list[LawSummary], tags=["search"])
     def list_laws() -> tuple[LawSummary, ...]:
@@ -113,10 +128,7 @@ def create_app(
         ] = None,
     ) -> SearchResponse:
         """Return the ``k`` articles that best answer ``q``, with citations."""
-        selected = list(dict.fromkeys(law or ()))
-        unknown = [law_id for law_id in selected if law_id not in source_urls]
-        if unknown:
-            raise _UnknownLawError(", ".join(unknown))
+        selected = _known_laws(law, source_urls)
         current: SearchService = request.app.state.service
         results = current.search(q, k=k, laws=selected or None)
         return SearchResponse(
@@ -127,6 +139,28 @@ def create_app(
             results=[to_hit(result, source_urls) for result in results],
         )
 
+    @app.get("/api/answer", response_model=AnswerResponse, responses=_ERRORS, tags=["search"])
+    def answer(
+        request: Request,
+        q: Annotated[str, Query(description="The question, in Arabic.")],
+        k: Annotated[int, Query(ge=1, le=MAX_K, description="Related articles to return.")] = 5,
+        law: Annotated[
+            list[str] | None, Query(description="Restrict to these law ids (repeatable).")
+        ] = None,
+    ) -> AnswerResponse:
+        """Quote the sentence of the law that answers ``q``, or say none does.
+
+        The quote is copied from the article in force, never generated; below a
+        calibrated confidence the status is ``not_found`` (ADR-0009).
+        """
+        selected = _known_laws(law, source_urls)
+        current: AnswerService | None = request.app.state.answers
+        if current is None:
+            raise _AnswersUnavailableError
+        result = current.answer(q, laws=selected or None, related=k)
+        return to_answer(result, selected, current.name, source_urls)
+
+    # After every real route: anything else under /api is an unknown route.
     @app.api_route(
         "/api/{rest:path}",
         methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -139,6 +173,14 @@ def create_app(
     # Mounted last so that it only serves what no API route matched.
     app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
     return app
+
+
+def _known_laws(law: list[str] | None, source_urls: Mapping[str, str]) -> list[str]:
+    selected = list(dict.fromkeys(law or ()))
+    unknown = [law_id for law_id in selected if law_id not in source_urls]
+    if unknown:
+        raise _UnknownLawError(", ".join(unknown))
+    return selected
 
 
 def client_key(request: Request, trusted_proxy_hops: int) -> str:
@@ -217,6 +259,15 @@ def _install_error_handlers(app: FastAPI) -> None:
             "unknown_law",
             f"Unknown law id: {error}. See /api/laws.",
             "النظام المطلوب غير موجود. راجع قائمة الأنظمة المتاحة.",
+        )
+
+    @app.exception_handler(_AnswersUnavailableError)
+    async def answers_unavailable(_: Request, __: _AnswersUnavailableError) -> JSONResponse:
+        return _error(
+            501,
+            "answers_unavailable",
+            "This deployment serves search only; answers need the reranked pipeline.",
+            "هذه النسخة تقدّم البحث فقط، والإجابة المقتبسة غير متاحة فيها.",
         )
 
     @app.exception_handler(RequestValidationError)

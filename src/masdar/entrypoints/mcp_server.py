@@ -11,13 +11,21 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
+from masdar.app.answer import AnswerService
 from masdar.app.search import SearchService
 from masdar.config import Settings
-from masdar.container import default_search_service, load_current_corpus
+from masdar.container import answer_service, default_search_service, load_current_corpus
 from masdar.domain.errors import InvalidDomainObjectError
 from masdar.domain.models import Article
 from masdar.entrypoints.laws import load_law_summaries
-from masdar.entrypoints.schemas import ArticleDetail, SearchResponse, to_detail, to_hit
+from masdar.entrypoints.schemas import (
+    AnswerResponse,
+    ArticleDetail,
+    SearchResponse,
+    to_answer,
+    to_detail,
+    to_hit,
+)
 
 MAX_K = 20
 
@@ -37,15 +45,19 @@ class RegulationTools:
         service: SearchService,
         articles: Iterable[Article],
         source_urls: Mapping[str, str],
+        answers: AnswerService | None = None,
     ) -> None:
         """Create the tools.
 
         Args:
             service: The search pipeline.
+            answers: Extractive answers; ``None`` when the pipeline cannot
+                offer them, and `answer_question` is then not registered.
             articles: Every current article, for lookups by id.
             source_urls: Official page per law id; its keys are the valid laws.
         """
         self._service = service
+        self._answers = answers
         self._articles = {article.article_id: article for article in articles}
         self._source_urls = dict(source_urls)
 
@@ -78,6 +90,36 @@ class RegulationTools:
             results=[to_hit(result, self._source_urls) for result in results],
         )
 
+    @property
+    def answers_enabled(self) -> bool:
+        """Whether `answer_question` can be offered."""
+        return self._answers is not None
+
+    def answer_question(self, question: str, law: str | None = None) -> AnswerResponse:
+        """Quote the sentence of Saudi law that answers a question, or say none does.
+
+        The quote is copied verbatim from the article in force, never generated.
+        When no sentence answers confidently, status is `not_found`: tell the
+        user so instead of guessing, and offer the related articles.
+
+        Args:
+            question: The question, ideally in Arabic (e.g. "كم مدة فترة التجربة؟").
+            law: Optional law id to answer from: labor-law, pdpl or companies-law.
+
+        Returns:
+            Status, verbatim quotes with citations, and related articles.
+        """
+        if self._answers is None:
+            raise ToolError("Answers are not available in this deployment")
+        if law is not None and law not in self._source_urls:
+            raise ToolError(f"Unknown law {law!r}; use one of {sorted(self._source_urls)}")
+        laws = [law] if law else []
+        try:
+            answer = self._answers.answer(question, laws=laws or None)
+        except InvalidDomainObjectError as error:
+            raise ToolError(str(error)) from error
+        return to_answer(answer, laws, self._answers.name, self._source_urls)
+
     def get_article(self, article_id: str) -> ArticleDetail:
         """Return one article's full text in force and its amendment history.
 
@@ -97,6 +139,7 @@ def build_server(
     service: SearchService,
     articles: Iterable[Article],
     source_urls: Mapping[str, str],
+    answers: AnswerService | None = None,
 ) -> MCPServer:
     """Wire the tools into an MCP server.
 
@@ -104,11 +147,14 @@ def build_server(
         service: The search pipeline.
         articles: Every current article, for `get_article`.
         source_urls: Official page per law id.
+        answers: Extractive answers, when the pipeline offers them.
     """
-    tools = RegulationTools(service, articles, source_urls)
+    tools = RegulationTools(service, articles, source_urls, answers)
     server: MCPServer = MCPServer(name="masdar", instructions=_INSTRUCTIONS)
     server.add_tool(tools.search_regulations, annotations=_READ_ONLY)
     server.add_tool(tools.get_article, annotations=_READ_ONLY)
+    if tools.answers_enabled:
+        server.add_tool(tools.answer_question, annotations=_READ_ONLY)
     return server
 
 
@@ -117,10 +163,12 @@ def main() -> None:  # pragma: no cover - wiring only; build_server is tested
     settings = Settings()
     laws = load_law_summaries(settings.dataset_dir / "stats.json")
     corpus = load_current_corpus(settings)
+    service = default_search_service(settings)
     build_server(
-        default_search_service(settings),
+        service,
         corpus.articles,
         {law.law_id: law.source_url for law in laws},
+        answer_service(service),
     ).run("stdio")
 
 

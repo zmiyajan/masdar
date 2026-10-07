@@ -93,12 +93,17 @@ class AnswerService:
         """E.g. ``"extractive(dense+rerank)"``."""
         return f"extractive({self._search.name})"
 
-    def answer(self, question: str, laws: Collection[str] | None = None) -> Answer:
+    def answer(
+        self, question: str, laws: Collection[str] | None = None, related: int | None = None
+    ) -> Answer:
         """Answer ``question`` with verbatim sentences of the law, or refuse.
 
         Args:
             question: The user's question.
             laws: Restrict the search to these law ids.
+            related: Articles to return for reading around the answer;
+                defaults to the ``articles`` read. Only the top ``articles``
+                are quoted from, so this never changes the answer itself.
 
         Returns:
             ``ANSWERED`` with up to ``max_sentences`` quotes from the best
@@ -110,10 +115,11 @@ class AnswerService:
                 the scorer returns the wrong number of scores.
         """
         text = validate_query(question)
-        related = tuple(self._search.search(text, k=self._articles, laws=laws))
-        ranked = self._rank(text, related)
+        shown = related or self._articles
+        results = tuple(self._search.search(text, k=max(self._articles, shown), laws=laws))
+        ranked = self._rank(text, results[: self._articles])
         if not ranked or ranked[0].score < self._threshold:
-            return Answer(text, AnswerStatus.NOT_FOUND, (), related)
+            return Answer(text, AnswerStatus.NOT_FOUND, (), results[:shown])
         best_article = ranked[0].result.article.article_id
         # Runners-up from other articles were almost never relevant in the
         # measurement, so extra quotes come only from the best article.
@@ -127,7 +133,7 @@ class AnswerService:
             Evidence(candidate.result.article, candidate.sentence, candidate.score)
             for candidate in chosen
         )
-        return Answer(text, AnswerStatus.ANSWERED, evidence, related)
+        return Answer(text, AnswerStatus.ANSWERED, evidence, results[:shown])
 
     def _rank(self, question: str, related: Sequence[ArticleResult]) -> list[_Candidate]:
         """Every sentence of ``related``, best first.

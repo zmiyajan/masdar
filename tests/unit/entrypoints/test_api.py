@@ -1,13 +1,14 @@
 """HTTP API tests: a real SearchService over a fake retriever, through TestClient."""
 
 import re
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 
 from entrypoints.entrypoint_fakes import REPO_ROOT, FakeRetriever
+from masdar.app.answer import AnswerService
 from masdar.app.search import SearchService
 from masdar.config import Settings
 from masdar.domain.search import MAX_QUERY_CHARS
@@ -126,7 +127,12 @@ class TestMeta:
     def test_health(self, client: TestClient) -> None:
         response = client.get("/api/health")
         assert response.status_code == 200
-        assert response.json() == {"status": "ok", "pipeline": "fake", "version": "0.1.0"}
+        assert response.json() == {
+            "status": "ok",
+            "pipeline": "fake",
+            "answers": False,
+            "version": "0.1.0",
+        }
 
     def test_laws_come_from_the_dataset_stats(self, client: TestClient) -> None:
         laws = client.get("/api/laws").json()
@@ -271,3 +277,46 @@ class TestClientKey:
                 for n in range(3)
             ]
         assert codes == [200, 200, 429]
+
+
+class ConstantScorer:
+    """Scores every (question, sentence) pair the same; enough to drive the flow."""
+
+    def __init__(self, value: float) -> None:
+        self.value = value
+
+    def score(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
+        return [self.value] * len(pairs)
+
+
+class TestAnswer:
+    def make_client(self, service: SearchService, settings: Settings, score: float) -> TestClient:
+        answers = AnswerService(service, ConstantScorer(score), threshold=0.0)
+        return TestClient(create_app(service, settings, answers=answers))
+
+    def test_quotes_the_law_verbatim_with_its_citation(
+        self, service: SearchService, settings: Settings
+    ) -> None:
+        with self.make_client(service, settings, score=5.0) as client:
+            assert client.get("/api/health").json()["answers"] is True
+            body = client.get("/api/answer", params={"q": "كم مدة إجازة الوضع؟"}).json()
+        assert body["status"] == "answered"
+        quote = body["quotes"][0]
+        top = body["results"][0]
+        assert quote["article_id"] == top["article_id"]
+        assert quote["sentence"] in top["text"]
+        assert quote["citation"] == top["citation"]
+        assert quote["source_url"].startswith("https://laws.boe.gov.sa/")
+
+    def test_low_confidence_is_an_explicit_refusal_with_related_articles(
+        self, service: SearchService, settings: Settings
+    ) -> None:
+        with self.make_client(service, settings, score=-50.0) as client:
+            body = client.get("/api/answer", params={"q": "ما عاصمة فرنسا؟", "k": 2}).json()
+        assert (body["status"], body["quotes"]) == ("not_found", [])
+        assert len(body["results"]) == 2
+
+    def test_search_only_deployments_say_so(self, client: TestClient) -> None:
+        response = client.get("/api/answer", params={"q": "س"})
+        assert response.status_code == 501
+        assert response.json()["error"]["code"] == "answers_unavailable"

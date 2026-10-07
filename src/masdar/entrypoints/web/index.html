@@ -55,10 +55,11 @@
         <div class="examples">
           <p class="examples__label" id="examples-label">أسئلة للتجربة</p>
           <ul class="examples__list" aria-labelledby="examples-label">
-            <li><button type="button" class="chip" data-question="كم مدة إجازة الأمومة؟">كم مدة إجازة الأمومة؟</button></li>
+            <li><button type="button" class="chip" data-question="كم الإجازة السنوية للعامل؟">كم الإجازة السنوية للعامل؟</button></li>
             <li><button type="button" class="chip" data-question="هل يجوز نقل بيانات العملاء خارج المملكة؟">هل يجوز نقل بيانات العملاء خارج المملكة؟</button></li>
-            <li><button type="button" class="chip" data-question="كيف تحسب مكافأة نهاية الخدمة؟">كيف تحسب مكافأة نهاية الخدمة؟</button></li>
+            <li><button type="button" class="chip" data-question="كم ساعات العمل في اليوم؟">كم ساعات العمل في اليوم؟</button></li>
             <li><button type="button" class="chip" data-question="ما أشكال الشركات في النظام؟">ما أشكال الشركات في النظام؟</button></li>
+            <li><button type="button" class="chip" data-question="كم غرامة قطع الإشارة؟">كم غرامة قطع الإشارة؟</button></li>
           </ul>
         </div>
 
@@ -73,6 +74,7 @@
     <section class="results shell" aria-labelledby="results-title">
       <h2 id="results-title" class="visually-hidden">النتائج</h2>
       <div id="progress" class="progress" hidden><span class="progress__bar"></span></div>
+      <section id="answer" class="answer" aria-live="polite" hidden></section>
       <p id="status" class="status" role="status" aria-live="polite"></p>
       <ol id="results" class="results__list"></ol>
     </section>

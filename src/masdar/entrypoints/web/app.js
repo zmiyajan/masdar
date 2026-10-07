@@ -13,10 +13,13 @@
   const statusEl = document.getElementById("status");
   const progress = document.getElementById("progress");
   const list = document.getElementById("results");
+  const answerBox = document.getElementById("answer");
   const template = document.getElementById("result-template");
 
   let lawTitles = new Map();
   let inFlight = null;
+  // Set from /api/health: deployments without the reranker serve search only.
+  let answersEnabled = false;
 
   // ---------------------------------------------------------------- Arabic matching
   // Mirrors the server's normalizer closely enough for highlighting: drop
@@ -175,6 +178,50 @@
     return node;
   }
 
+  // The answer is the law's own sentence, copied verbatim by the server; the
+  // page only lays it out. A refusal is shown as plainly as an answer.
+  function renderAnswer(body) {
+    answerBox.replaceChildren();
+    answerBox.dataset.state = body.status;
+    const title = document.createElement("h3");
+    title.className = "answer__title";
+    if (body.status !== "answered") {
+      title.textContent = "لا توجد جملة في هذه الأنظمة تجيب سؤالك بثقة";
+      const note = document.createElement("p");
+      note.className = "answer__note";
+      note.textContent = "لم نخمّن جواباً. هذه أقرب المواد إلى سؤالك، اقرأها للتحقق.";
+      answerBox.append(title, note);
+      answerBox.hidden = false;
+      return;
+    }
+    title.textContent = "الجواب من نص النظام";
+    answerBox.append(title);
+    for (const quote of body.quotes) {
+      const block = document.createElement("blockquote");
+      block.className = "answer__quote";
+      block.textContent = quote.sentence;
+      answerBox.append(block);
+    }
+    const first = body.quotes[0];
+    const cite = document.createElement("p");
+    cite.className = "answer__cite";
+    if (first.source_url) {
+      const link = document.createElement("a");
+      link.href = first.source_url;
+      link.rel = "noopener noreferrer";
+      link.target = "_blank";
+      link.textContent = first.citation;
+      cite.append(link);
+    } else {
+      cite.textContent = first.citation;
+    }
+    const note = document.createElement("p");
+    note.className = "answer__note";
+    note.textContent = "مقتبس حرفياً من نص المادة السارية، دون صياغة أو توليد.";
+    answerBox.append(cite, note);
+    answerBox.hidden = false;
+  }
+
   function setStatus(message, tone = "") {
     statusEl.textContent = message;
     statusEl.dataset.tone = tone;
@@ -215,8 +262,10 @@
     setBusy(true);
     setStatus("جارٍ البحث…");
     list.replaceChildren();
+    answerBox.hidden = true;
     try {
-      const response = await fetch(`/api/search?${params}`, {
+      const endpoint = answersEnabled ? "/api/answer" : "/api/search";
+      const response = await fetch(`${endpoint}?${params}`, {
         headers: { Accept: "application/json" },
         signal: controller.signal,
       });
@@ -229,6 +278,7 @@
         setStatus(`لا توجد مادة تطابق سؤالك في ${scopeLabel(laws)}. جرّب صياغة أخرى أو وسّع النطاق.`, "empty");
         return;
       }
+      if (body.status) renderAnswer(body);
       const stems = queryStems(body.query);
       list.replaceChildren(...body.results.map((hit) => renderHit(hit, stems)));
       setStatus(`${articleCount(body.results.length)} من ${scopeLabel(laws)}، مرتبة بحسب الصلة بسؤالك.`);
@@ -309,10 +359,13 @@
   });
 
   const initial = new URLSearchParams(location.search);
-  fetch("/api/laws", { headers: { Accept: "application/json" } })
-    .then((response) => (response.ok ? response.json() : []))
-    .then((laws) => renderLaws(laws, initial.getAll("law")))
-    .catch(() => { /* Filters are optional; search still covers every law. */ })
+  const getJson = (url) => fetch(url, { headers: { Accept: "application/json" } })
+    .then((response) => (response.ok ? response.json() : null));
+  Promise.allSettled([
+    getJson("/api/laws").then((laws) => renderLaws(laws || [], initial.getAll("law"))),
+    getJson("/api/health").then((health) => { answersEnabled = Boolean(health?.answers); }),
+  ])
+    // Filters and answers are optional; search still covers every law.
     .finally(() => {
       const question = initial.get("q");
       if (question) {

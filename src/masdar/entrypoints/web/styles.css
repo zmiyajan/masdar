@@ -276,6 +276,29 @@ a:hover { text-decoration-thickness: 2px; }
 /* --------------------------------------------------------------- results */
 .results { padding-block: 0.5rem 2rem; }
 
+.answer {
+  margin: 0 0 1.25rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-inline-start: 4px solid var(--accent);
+  border-radius: var(--radius-card);
+}
+.answer[data-state="not_found"] { background: var(--surface); border-inline-start-color: var(--muted); }
+.answer__title { margin: 0 0 0.6rem; font-size: 1.05rem; }
+.answer__quote {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-law);
+  font-size: 1.15rem;
+  line-height: 2;
+  color: var(--ink);
+}
+.answer__quote::before { content: "«"; }
+.answer__quote::after { content: "»"; }
+.answer__cite { margin: 0; font-weight: 600; }
+.answer__cite a { color: var(--accent); }
+.answer__note { margin: 0.35rem 0 0; font-size: 0.85rem; color: var(--muted); }
+
 .status { min-height: 1.7em; margin: 0 0 1rem; color: var(--muted); }
 .status[data-tone="error"] { color: var(--error); font-weight: 500; }
 .status[data-tone="empty"] { color: var(--ink); }

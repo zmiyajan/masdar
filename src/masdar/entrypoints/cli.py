@@ -4,6 +4,7 @@ Commands:
     ``masdar dataset [--offline] [--refresh] [--laws ...]``: build the dataset.
     ``masdar eval [--pipeline NAME ...] [--lexical] [--update-baseline]``: measure pipelines.
     ``masdar search "سؤال" [-k N]``: print ranked citations.
+    ``masdar answer "سؤال" [--laws ...]``: quote the sentence of the law that answers it.
 
 This module only parses arguments, calls a use case and prints the result. It
 is the one place where printing to stdout is the intended output.
@@ -20,10 +21,13 @@ from masdar.config import Settings
 from masdar.container import (
     LEXICAL_PIPELINES,
     PIPELINES,
+    answer_quality,
+    answer_service,
     dataset_builder,
     default_search_service,
     eval_results_writer,
     evaluate_use_case,
+    save_answer_quality,
     search_service,
 )
 from masdar.domain.dataset import DatasetReport
@@ -44,6 +48,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "dataset": _dataset,
         "eval": _eval,
         "search": _search,
+        "answer": _answer,
     }
     try:
         output = commands[args.command](args, Settings())
@@ -66,11 +71,17 @@ def _eval(args: argparse.Namespace, settings: Settings) -> str:
     if args.update_baseline and _BASELINE_PIPELINE not in names:
         raise MasdarError(f"--update-baseline needs the {_BASELINE_PIPELINE!r} pipeline")
     evaluate = evaluate_use_case(settings)
-    reports = [evaluate.run(search_service(settings, name)) for name in names]
-    writer = eval_results_writer(args.out or settings.eval_dir)
+    services = {name: search_service(settings, name) for name in names}
+    reports = [evaluate.run(service) for service in services.values()]
+    out = args.out or settings.eval_dir
+    writer = eval_results_writer(out)
     written = writer.write(reports)
     lines = [_eval_table(reports), "", *(f"wrote {path}" for path in written)]
     lines.append(f"wrote {writer.summary_path}")
+    served = services.get(settings.pipeline)
+    answers = answer_service(served) if served is not None else None
+    if answers is not None:
+        lines.append(f"wrote {save_answer_quality(answer_quality(settings, answers), out)}")
     if args.update_baseline:
         [baseline] = [r for r in reports if r.pipeline == _BASELINE_PIPELINE]
         lines.append(f"wrote {writer.write_baseline(baseline)}")
@@ -91,6 +102,23 @@ def _search(args: argparse.Namespace, settings: Settings) -> str:
             f"{result.score:.2f}"
         )
         lines.append(f"    {excerpt}")
+    return "\n".join(lines)
+
+
+def _answer(args: argparse.Namespace, settings: Settings) -> str:
+    answers = answer_service(default_search_service(settings))
+    if answers is None:
+        raise MasdarError(
+            f"answers need a reranked pipeline; {settings.pipeline!r} has none "
+            "(set MASDAR_PIPELINE=dense+rerank)"
+        )
+    answer = answers.answer(args.question, laws=args.laws)
+    if answer.top is None:
+        lines = ["no confident answer in the law; closest articles:"]
+        lines += [f"  - {r.article.citation}  [{r.article.article_id}]" for r in answer.related]
+        return "\n".join(lines)
+    lines = [f"{answer.top.article.citation}  [{answer.top.article.article_id}]"]
+    lines += [f"  «{evidence.sentence}»" for evidence in answer.evidence]
     return "\n".join(lines)
 
 
@@ -121,6 +149,9 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help=f"record {_BASELINE_PIPELINE!r} as the regression baseline",
     )
+    answer = commands.add_parser("answer", help="quote the sentence of the law that answers")
+    answer.add_argument("question", help="the question, in Arabic")
+    answer.add_argument("--laws", nargs="+", metavar="LAW_ID", help="only these laws")
     search = commands.add_parser("search", help="search the current law")
     search.add_argument("question", help="the question, in Arabic")
     search.add_argument("-k", type=_positive_int, default=5, help="number of articles (default: 5)")

@@ -30,6 +30,11 @@ class SearchService:
         self._candidates = candidates
 
     @property
+    def reranker(self) -> Reranker | None:
+        """The second stage, if any; the answer layer reuses its model."""
+        return self._reranker
+
+    @property
     def name(self) -> str:
         """Pipeline name, e.g. ``"hybrid+rerank"``."""
         if self._reranker is None:

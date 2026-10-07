@@ -12,6 +12,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from masdar.domain.amendments import Amendment, ArticleStatus
+from masdar.domain.answer import Answer, AnswerStatus
 from masdar.domain.models import Article
 from masdar.domain.search import ArticleResult
 
@@ -88,6 +89,35 @@ class SearchResponse(_Frozen):
     results: list[ArticleHit]
 
 
+class Quote(_Frozen):
+    """One sentence of the law, quoted verbatim, that answers the question.
+
+    Attributes:
+        article_id: Article the sentence comes from, e.g. ``"labor-law:53"``.
+        citation: Law and article number, ready to cite.
+        sentence: Exact text from the article in force; never generated.
+        source_url: Official page of the law.
+    """
+
+    article_id: str
+    citation: str
+    sentence: str
+    source_url: str | None
+
+
+class AnswerResponse(_Frozen):
+    """A quoted answer (or a refusal) plus the articles it was read from."""
+
+    query: str
+    laws: list[str]
+    status: AnswerStatus = Field(
+        description="`answered` when `quotes` holds the law's own words; `not_found` otherwise."
+    )
+    quotes: list[Quote]
+    pipeline: str = Field(description="Answer service that produced it.")
+    results: list[ArticleHit] = Field(description="Related articles, best first.")
+
+
 class ArticleDetail(_Frozen):
     """One article with its full amendment history."""
 
@@ -126,6 +156,7 @@ class HealthResponse(_Frozen):
 
     status: Literal["ok"] = "ok"
     pipeline: str
+    answers: bool = Field(default=False, description="Whether `/api/answer` is offered.")
     version: str
 
 
@@ -204,4 +235,33 @@ def to_detail(article: Article, source_urls: Mapping[str, str]) -> ArticleDetail
             AmendmentNote(**_amendment_out(a).model_dump(), note=a.note) for a in article.amendments
         ],
         source_url=source_urls.get(article.law_id),
+    )
+
+
+def to_answer(
+    answer: Answer, laws: list[str], pipeline: str, source_urls: Mapping[str, str]
+) -> AnswerResponse:
+    """Present an extractive answer with its related articles.
+
+    Args:
+        answer: The answer or refusal.
+        laws: The law filter the question was asked with.
+        pipeline: Name of the answer service.
+        source_urls: Official page per law id.
+    """
+    return AnswerResponse(
+        query=answer.question,
+        laws=laws,
+        status=answer.status,
+        quotes=[
+            Quote(
+                article_id=evidence.article.article_id,
+                citation=evidence.article.citation,
+                sentence=evidence.sentence,
+                source_url=source_urls.get(evidence.article.law_id),
+            )
+            for evidence in answer.evidence
+        ],
+        pipeline=pipeline,
+        results=[to_hit(result, source_urls) for result in answer.related],
     )
