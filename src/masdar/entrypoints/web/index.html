@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>مصدر · بحث في الأنظمة السعودية</title>
+  <meta name="description" content="محرّك بحث عربي في نظام العمل ونظام حماية البيانات الشخصية ونظام الشركات: سؤال بالعربية، والمادة النظامية بنصّها الساري مع الاستشهاد والمصدر الرسمي.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101814" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Naskh+Arabic:wght@400;600&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#q">انتقل إلى البحث</a>
+
+  <header class="masthead">
+    <div class="shell masthead__inner">
+      <a class="wordmark" href="/" aria-label="مصدر، الصفحة الرئيسية">
+        <span class="wordmark__ar">مصدر</span>
+        <span class="wordmark__en" lang="en" dir="ltr">Masdar</span>
+      </a>
+      <nav aria-label="روابط">
+        <ul class="masthead__nav">
+          <li><a href="#how">كيف يعمل؟</a></li>
+          <li><a href="/docs" lang="en" dir="ltr">API</a></li>
+          <li><a href="https://github.com/zmiyajan/masdar" rel="noopener noreferrer" target="_blank" lang="en" dir="ltr">GitHub</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="ask shell" aria-labelledby="ask-title">
+      <h1 id="ask-title" class="ask__title">اسأل الأنظمة السعودية، واقرأ المادة بنصّها.</h1>
+      <p class="ask__lede">
+        بحث بالعربية في نظام العمل ونظام حماية البيانات الشخصية ونظام الشركات.
+        النتائج مواد نظامية بنصّها الساري بعد تطبيق التعديلات، مع الاستشهاد ورابط المصدر الرسمي.
+      </p>
+
+      <form id="search-form" class="search" role="search" novalidate>
+        <label class="search__label" for="q">سؤالك</label>
+        <div class="search__row">
+          <input id="q" name="q" class="search__input" type="search" maxlength="500"
+                 autocomplete="off" enterkeyhint="search" required
+                 placeholder="مثال: ما مدة فترة التجربة؟" aria-describedby="q-hint">
+          <button class="search__submit" type="submit">ابحث</button>
+        </div>
+        <p id="q-hint" class="search__hint">اكتب بالفصحى أو باللهجة؛ حتى 500 حرف.</p>
+
+        <div class="examples">
+          <p class="examples__label" id="examples-label">أسئلة للتجربة</p>
+          <ul class="examples__list" aria-labelledby="examples-label">
+            <li><button type="button" class="chip" data-question="كم مدة إجازة الأمومة؟">كم مدة إجازة الأمومة؟</button></li>
+            <li><button type="button" class="chip" data-question="هل يجوز نقل بيانات العملاء خارج المملكة؟">هل يجوز نقل بيانات العملاء خارج المملكة؟</button></li>
+            <li><button type="button" class="chip" data-question="كيف تحسب مكافأة نهاية الخدمة؟">كيف تحسب مكافأة نهاية الخدمة؟</button></li>
+            <li><button type="button" class="chip" data-question="ما أشكال الشركات في النظام؟">ما أشكال الشركات في النظام؟</button></li>
+          </ul>
+        </div>
+
+        <fieldset class="scope">
+          <legend class="scope__legend">ابحث في</legend>
+          <div id="law-filters" class="scope__pills"></div>
+          <p class="scope__hint">بدون اختيار يشمل البحث الأنظمة الثلاثة.</p>
+        </fieldset>
+      </form>
+    </section>
+
+    <section class="results shell" aria-labelledby="results-title">
+      <h2 id="results-title" class="visually-hidden">النتائج</h2>
+      <div id="progress" class="progress" hidden><span class="progress__bar"></span></div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <ol id="results" class="results__list"></ol>
+    </section>
+
+    <section id="how" class="how shell" aria-labelledby="how-title">
+      <h2 id="how-title" class="how__title">كيف يعمل؟</h2>
+      <ol class="how__steps">
+        <li>
+          <h3>نصّ ساري لا نصّ منشور</h3>
+          <p>تنشر بوابة هيئة الخبراء الأنظمة بصيغتها الأصلية وتُرفق التعديلات ملاحظاتٍ نصية. يقرأ مصدر هذه الملاحظات ويطبّق التعديلات الكاملة بحسب تاريخ المرسوم، ويضع على المادة وسم «يحتاج مراجعة» حين يكون التعديل جزئياً لا يمكن تطبيقه بيقين.</p>
+        </li>
+        <li>
+          <h3>بحث يفهم العربية</h3>
+          <p>يوحّد أشكال الهمزات والتاء المربوطة ويحذف التشكيل والتطويل قبل المطابقة، ثم يرتّب المواد بحسب صلتها بسؤالك.</p>
+        </li>
+        <li>
+          <h3>استشهاد قابل للتحقق</h3>
+          <p>كل نتيجة مادة كاملة باسم النظام ورقم المادة وحالتها ورابط صفحتها الرسمية، وجودة البحث مقيسة على مجموعة أسئلة مرجعية منشورة.</p>
+        </li>
+      </ol>
+      <div class="sources">
+        <h3 class="sources__title">المصادر المفهرسة</h3>
+        <ul id="law-sources" class="sources__list"></ul>
+      </div>
+      <p class="how__more">
+        الشيفرة ومجموعة البيانات والتقييم مفتوحة المصدر على
+        <a href="https://github.com/zmiyajan/masdar" rel="noopener noreferrer" target="_blank">GitHub</a>.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell">
+      <p class="footer__disclaimer"><strong>ليس استشارة قانونية — تحقق دائماً من المصدر الرسمي.</strong></p>
+      <p class="footer__note">النصوص مأخوذة من بوابة هيئة الخبراء بمجلس الوزراء، وقد لا تعكس تعديلات صدرت بعد تاريخ النسخة.</p>
+    </div>
+  </footer>
+
+  <template id="result-template">
+    <li class="result">
+      <article class="card" data-status="">
+        <header class="card__head">
+          <div class="card__titles">
+            <h3 class="card__heading"></h3>
+            <p class="card__law"></p>
+          </div>
+          <span class="badge"></span>
+        </header>
+        <p class="card__trail"></p>
+        <p class="card__text"></p>
+        <details class="card__full" hidden>
+          <summary>عرض المادة كاملة</summary>
+          <p class="card__text card__text--full"></p>
+        </details>
+        <p class="card__provenance" hidden></p>
+        <footer class="card__foot">
+          <a class="card__source" rel="noopener noreferrer" target="_blank">النص في المصدر الرسمي</a>
+          <button type="button" class="card__copy">نسخ الاستشهاد</button>
+        </footer>
+      </article>
+    </li>
+  </template>
+</body>
+</html>
