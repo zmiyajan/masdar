@@ -81,6 +81,9 @@ for display and citations, and a separate `normalized_text` used only for matchi
 | adapters | `bm25.py` | `Bm25Retriever` (rank-bm25) with one analyzer for documents and queries |
 | adapters | `dense.py` | `DenseRetriever`: mE5-small, E5 prefixes, fingerprinted embedding cache |
 | adapters | `cross_encoder.py` | `CrossEncoderReranker`: mmarco-mMiniLMv2, pairs truncated to 256 tokens |
+| domain | `answer.py` | Verbatim sentence splitting, `Evidence` (must quote its article), `Answer`, answer quality report (ADR-0009) |
+| adapters | `out_of_scope_jsonl.py` | Questions the corpus does not answer, for measuring abstention |
+| app | `answer.py` | `AnswerService`: quote the best sentences of the law or refuse below a calibrated threshold |
 | adapters | `eval_writer.py` | `eval/results/*.json`, generated `eval/RESULTS.md`, `eval/baseline.json` |
 | app | `build_dataset.py` | Load, resolve, validate integrity, write |
 | app | `evaluate.py` | Run a `SearchService` over the gold set and score articles |
