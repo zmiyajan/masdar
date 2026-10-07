@@ -320,3 +320,36 @@ class TestAnswer:
         response = client.get("/api/answer", params={"q": "س"})
         assert response.status_code == 501
         assert response.json()["error"]["code"] == "answers_unavailable"
+
+
+class TestCheck:
+    CONTRACT = (
+        "المادة الأولى: يخضع الموظف لفترة تجربة مدتها مائتا يوم.\n"
+        "المادة الثانية: يستحق الموظف إجازة سنوية مدتها ثلاثون يوماً.\n"
+        "المادة الثالثة: يلتزم الموظف بالمحافظة على سرية المعلومات."
+    )
+
+    def test_verdicts_per_clause_with_citations(self, client: TestClient) -> None:
+        response = client.post("/api/check", json={"text": self.CONTRACT})
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert [len(clause["findings"]) for clause in body["clauses"]] == [1, 1, 0]
+        violation = body["clauses"][0]["findings"][0]
+        assert (violation["kind"], violation["article_id"]) == ("violation", "labor-law:53")
+        assert violation["source_url"].startswith("https://laws.boe.gov.sa/")
+        assert body["clauses"][1]["findings"][0]["kind"] == "compliant"
+        assert body["counts"] == {"violation": 1, "compliant": 1, "review_needed": 0}
+        assert all(clause["related"] for clause in body["clauses"])
+
+    @pytest.mark.parametrize(
+        ("payload", "code"),
+        [
+            pytest.param({"text": "   "}, "invalid_document", id="blank"),
+            pytest.param({"text": "س" * 20_001}, "invalid_request", id="too-long"),
+            pytest.param({}, "invalid_request", id="missing"),
+        ],
+    )
+    def test_bad_documents_are_422(self, client: TestClient, payload: Any, code: str) -> None:
+        response = client.post("/api/check", json=payload)
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == code

@@ -21,6 +21,7 @@ class Settings(BaseSettings):
         dataset_dir: Where ``make dataset`` writes the BEIR corpus and card.
         gold_path: The gold question set (JSON Lines, one question per line).
         out_of_scope_path: Questions the corpus does not answer, for measuring refusals.
+        clause_sets: Labeled contract clauses the checker is measured on, by name.
         crawl_delay_seconds: Pause between portal requests; robots.txt asks for
             at least 10 seconds, so lower values are rejected.
         http_timeout_seconds: Timeout for one portal request.
@@ -41,6 +42,9 @@ class Settings(BaseSettings):
     dataset_dir: Path = Path("data/dataset")
     gold_path: Path = Path("data/gold/queries.v1.jsonl")
     out_of_scope_path: Path = Path("data/gold/out_of_scope.v1.jsonl")
+    clause_sets: dict[str, Path] = Field(
+        default_factory=lambda: {"development": Path("data/gold/clauses.v1.jsonl")}
+    )
     crawl_delay_seconds: float = Field(
         default=ROBOTS_CRAWL_DELAY_SECONDS, ge=ROBOTS_CRAWL_DELAY_SECONDS
     )

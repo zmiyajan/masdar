@@ -5,6 +5,7 @@ Commands:
     ``masdar eval [--pipeline NAME ...] [--lexical] [--update-baseline]``: measure pipelines.
     ``masdar search "سؤال" [-k N]``: print ranked citations.
     ``masdar answer "سؤال" [--laws ...]``: quote the sentence of the law that answers it.
+    ``masdar check FILE|-``: check a contract or HR policy against the Labor Law in force.
 
 This module only parses arguments, calls a use case and prints the result. It
 is the one place where printing to stdout is the intended output.
@@ -23,11 +24,13 @@ from masdar.container import (
     PIPELINES,
     answer_quality,
     answer_service,
+    check_contract_use_case,
+    checker_quality,
     dataset_builder,
     default_search_service,
     eval_results_writer,
     evaluate_use_case,
-    save_answer_quality,
+    save_quality_report,
     search_service,
 )
 from masdar.domain.dataset import DatasetReport
@@ -49,6 +52,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "eval": _eval,
         "search": _search,
         "answer": _answer,
+        "check": _check,
     }
     try:
         output = commands[args.command](args, Settings())
@@ -81,7 +85,10 @@ def _eval(args: argparse.Namespace, settings: Settings) -> str:
     served = services.get(settings.pipeline)
     answers = answer_service(served) if served is not None else None
     if answers is not None:
-        lines.append(f"wrote {save_answer_quality(answer_quality(settings, answers), out)}")
+        report = answer_quality(settings, answers).to_dict()
+        lines.append(f"wrote {save_quality_report('answers', report, out)}")
+    checker = {name: r.to_dict() for name, r in checker_quality(settings).items()}
+    lines.append(f"wrote {save_quality_report('checker', checker, out)}")
     if args.update_baseline:
         [baseline] = [r for r in reports if r.pipeline == _BASELINE_PIPELINE]
         lines.append(f"wrote {writer.write_baseline(baseline)}")
@@ -122,6 +129,25 @@ def _answer(args: argparse.Namespace, settings: Settings) -> str:
     return "\n".join(lines)
 
 
+_VERDICT_LABELS = {"violation": "مخالفة", "compliant": "متوافق", "review_needed": "يحتاج مراجعة"}
+
+
+def _check(args: argparse.Namespace, settings: Settings) -> str:
+    text = sys.stdin.read() if args.file == "-" else Path(args.file).read_text(encoding="utf-8")
+    report = check_contract_use_case(default_search_service(settings)).run(text)
+    lines = []
+    for clause in report.clauses:
+        if not clause.findings:
+            continue
+        lines.append(f"[{clause.clause.index}] {' '.join(clause.clause.text.split())[:120]}")
+        lines += [
+            f"    {_VERDICT_LABELS[finding.kind]}: {finding.message}" for finding in clause.findings
+        ]
+    counts = ", ".join(f"{_VERDICT_LABELS[kind]} {n}" for kind, n in report.counts.items())
+    lines.append(f"{len(report.clauses)} clauses checked: {counts}")
+    return "\n".join(lines)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="masdar", description="Masdar command-line tools.")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -152,6 +178,8 @@ def _parser() -> argparse.ArgumentParser:
     answer = commands.add_parser("answer", help="quote the sentence of the law that answers")
     answer.add_argument("question", help="the question, in Arabic")
     answer.add_argument("--laws", nargs="+", metavar="LAW_ID", help="only these laws")
+    check = commands.add_parser("check", help="check a contract or policy against the Labor Law")
+    check.add_argument("file", help="UTF-8 text file, or - to read standard input")
     search = commands.add_parser("search", help="search the current law")
     search.add_argument("question", help="the question, in Arabic")
     search.add_argument("-k", type=_positive_int, default=5, help="number of articles (default: 5)")

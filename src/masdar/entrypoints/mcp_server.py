@@ -12,17 +12,25 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
 from masdar.app.answer import AnswerService
+from masdar.app.check_contract import CheckContract
 from masdar.app.search import SearchService
 from masdar.config import Settings
-from masdar.container import answer_service, default_search_service, load_current_corpus
+from masdar.container import (
+    answer_service,
+    check_contract_use_case,
+    default_search_service,
+    load_current_corpus,
+)
 from masdar.domain.errors import InvalidDomainObjectError
 from masdar.domain.models import Article
 from masdar.entrypoints.laws import load_law_summaries
 from masdar.entrypoints.schemas import (
     AnswerResponse,
     ArticleDetail,
+    CheckResponse,
     SearchResponse,
     to_answer,
+    to_check,
     to_detail,
     to_hit,
 )
@@ -46,6 +54,7 @@ class RegulationTools:
         articles: Iterable[Article],
         source_urls: Mapping[str, str],
         answers: AnswerService | None = None,
+        checker: CheckContract | None = None,
     ) -> None:
         """Create the tools.
 
@@ -53,11 +62,13 @@ class RegulationTools:
             service: The search pipeline.
             answers: Extractive answers; ``None`` when the pipeline cannot
                 offer them, and `answer_question` is then not registered.
+            checker: The contract checker; built from ``service`` when omitted.
             articles: Every current article, for lookups by id.
             source_urls: Official page per law id; its keys are the valid laws.
         """
         self._service = service
         self._answers = answers
+        self._checker = checker or check_contract_use_case(service)
         self._articles = {article.article_id: article for article in articles}
         self._source_urls = dict(source_urls)
 
@@ -120,6 +131,32 @@ class RegulationTools:
             raise ToolError(str(error)) from error
         return to_answer(answer, laws, self._answers.name, self._source_urls)
 
+    def check_contract(self, text: str, law: str | None = None) -> CheckResponse:
+        """Check an employment contract or HR policy against the Saudi Labor Law in force.
+
+        Splits the text into clauses. Where a clause states a quantity the law
+        limits (probation, notice, leave, working hours, non-compete, ...), it
+        returns a verdict that cites the article: violation, compliant, or
+        review_needed when the wording is uncertain. Verdicts are rules pinned
+        to the law's text in force, never a model's opinion. Every clause also
+        gets related articles. This is not legal advice: present verdicts as
+        pointers for a person to verify.
+
+        Args:
+            text: The contract or policy, in Arabic, up to 20,000 characters.
+            law: Optional law id to restrict related articles and rules to.
+
+        Returns:
+            Verdict counts and, per clause, findings and related articles.
+        """
+        if law is not None and law not in self._source_urls:
+            raise ToolError(f"Unknown law {law!r}; use one of {sorted(self._source_urls)}")
+        try:
+            report = self._checker.run(text, laws=[law] if law else None)
+        except InvalidDomainObjectError as error:
+            raise ToolError(str(error)) from error
+        return to_check(report, self._source_urls)
+
     def get_article(self, article_id: str) -> ArticleDetail:
         """Return one article's full text in force and its amendment history.
 
@@ -153,6 +190,7 @@ def build_server(
     server: MCPServer = MCPServer(name="masdar", instructions=_INSTRUCTIONS)
     server.add_tool(tools.search_regulations, annotations=_READ_ONLY)
     server.add_tool(tools.get_article, annotations=_READ_ONLY)
+    server.add_tool(tools.check_contract, annotations=_READ_ONLY)
     if tools.answers_enabled:
         server.add_tool(tools.answer_question, annotations=_READ_ONLY)
     return server

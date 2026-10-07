@@ -19,6 +19,7 @@ from masdar.adapters.beir_writer import BeirDatasetWriter
 from masdar.adapters.bm25 import Bm25Retriever, arabic_analyzer, display_text, whitespace_analyzer
 from masdar.adapters.boe.client import BoeClient
 from masdar.adapters.boe.source import BoeLawSource
+from masdar.adapters.clauses_jsonl import JsonlLabeledClauseSource
 from masdar.adapters.cross_encoder import (
     DEFAULT_ANSWER_THRESHOLD,
     DEFAULT_RERANK_CANDIDATES,
@@ -31,6 +32,7 @@ from masdar.adapters.gold_jsonl import JsonlGoldSource
 from masdar.adapters.out_of_scope_jsonl import JsonlOutOfScopeSource
 from masdar.app.answer import AnswerService, measure_answers
 from masdar.app.build_dataset import BuildDataset
+from masdar.app.check_contract import CheckContract, measure_checker
 from masdar.app.corpus import Corpus, load_corpus
 from masdar.app.evaluate import Evaluate
 from masdar.app.hybrid import HybridRetriever
@@ -38,8 +40,10 @@ from masdar.app.search import SearchService
 from masdar.config import ROBOTS_CRAWL_DELAY_SECONDS, Settings
 from masdar.domain.answer import AnswerQualityReport
 from masdar.domain.arabic import ArabicNormalizer
+from masdar.domain.checker_quality import CheckerQualityReport
 from masdar.domain.chunking import ChunkingOptions
 from masdar.domain.errors import MasdarError
+from masdar.domain.labor_rules import LABOR_RULES
 from masdar.domain.tokenize import ArabicTokenizer, TokenizerOptions
 
 
@@ -269,9 +273,31 @@ def answer_quality(settings: Settings, service: AnswerService) -> AnswerQualityR
     )
 
 
-def save_answer_quality(report: AnswerQualityReport, eval_dir: Path) -> Path:
-    """Write ``answers.json`` next to the retrieval results; returns its path."""
-    path = eval_dir / "answers.json"
-    document = json.dumps(report.to_dict(), ensure_ascii=False, indent=2, sort_keys=True)
-    write_atomically(path, (document + "\n").encode("utf-8"))
+def check_contract_use_case(search: SearchService) -> CheckContract:
+    """The contract checker with the Labor Law rules (ADR-0010).
+
+    Verdicts never depend on retrieval; the related articles shown under each
+    clause come from the served pipeline's first stage only. A contract can
+    hold dozens of clauses, and reranking each one would cost about half a
+    second of CPU apiece on the demo hardware.
+
+    Args:
+        search: The served pipeline; its first-stage retriever is reused.
+    """
+    return CheckContract(SearchService(search.retriever), LABOR_RULES)
+
+
+def checker_quality(settings: Settings) -> dict[str, CheckerQualityReport]:
+    """Verdict quality on every configured labeled clause set, by set name."""
+    return {
+        name: measure_checker(JsonlLabeledClauseSource(path).load(), LABOR_RULES)
+        for name, path in settings.clause_sets.items()
+    }
+
+
+def save_quality_report(name: str, document: Mapping[str, object], eval_dir: Path) -> Path:
+    """Write ``<name>.json`` next to the retrieval results; returns its path."""
+    path = eval_dir / f"{name}.json"
+    text = json.dumps(document, ensure_ascii=False, indent=2, sort_keys=True)
+    write_atomically(path, (text + "\n").encode("utf-8"))
     return path

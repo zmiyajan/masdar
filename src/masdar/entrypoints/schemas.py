@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from masdar.domain.amendments import Amendment, ArticleStatus
 from masdar.domain.answer import Answer, AnswerStatus
+from masdar.domain.compliance import ContractReport, FindingKind
 from masdar.domain.models import Article
 from masdar.domain.search import ArticleResult
 
@@ -116,6 +117,60 @@ class AnswerResponse(_Frozen):
     quotes: list[Quote]
     pipeline: str = Field(description="Answer service that produced it.")
     results: list[ArticleHit] = Field(description="Related articles, best first.")
+
+
+class CheckRequest(_Frozen):
+    """A contract or HR policy to check."""
+
+    text: str = Field(description="The document, as pasted (Arabic).", max_length=20_000)
+    laws: list[str] | None = Field(
+        default=None, description="Restrict related articles and rules to these law ids."
+    )
+
+
+class FindingOut(_Frozen):
+    """One verdict on one clause, with the article it rests on.
+
+    Attributes:
+        rule_id: Stable rule id, e.g. ``"probation-max"``.
+        article_id: The article whose text in force states the limit.
+        citation: Law and article number, ready to cite.
+        kind: ``violation``, ``compliant`` or ``review_needed``.
+        kind_label: The verdict in Arabic.
+        message: Arabic explanation: stated amount, the limit, the article.
+        source_url: Official page of the law.
+    """
+
+    rule_id: str
+    article_id: str
+    citation: str
+    kind: FindingKind
+    kind_label: str
+    message: str
+    source_url: str | None
+
+
+class ClauseOut(_Frozen):
+    """One clause of the document with its verdicts and related articles."""
+
+    index: int
+    text: str
+    findings: list[FindingOut]
+    related: list[ArticleHit]
+
+
+class CheckResponse(_Frozen):
+    """Every clause in document order, plus verdict counts."""
+
+    counts: dict[FindingKind, int]
+    clauses: list[ClauseOut]
+
+
+VERDICT_LABELS: Mapping[FindingKind, str] = {
+    FindingKind.VIOLATION: "مخالفة",
+    FindingKind.COMPLIANT: "متوافق",
+    FindingKind.REVIEW_NEEDED: "يحتاج مراجعة",
+}
 
 
 class ArticleDetail(_Frozen):
@@ -264,4 +319,36 @@ def to_answer(
         ],
         pipeline=pipeline,
         results=[to_hit(result, source_urls) for result in answer.related],
+    )
+
+
+def to_check(report: ContractReport, source_urls: Mapping[str, str]) -> CheckResponse:
+    """Present a contract check.
+
+    Args:
+        report: Clause-by-clause verdicts and related articles.
+        source_urls: Official page per law id.
+    """
+    return CheckResponse(
+        counts=dict(report.counts),
+        clauses=[
+            ClauseOut(
+                index=clause.clause.index,
+                text=clause.clause.text,
+                findings=[
+                    FindingOut(
+                        rule_id=finding.rule.rule_id,
+                        article_id=finding.rule.article_id,
+                        citation=finding.rule.citation,
+                        kind=finding.kind,
+                        kind_label=VERDICT_LABELS[finding.kind],
+                        message=finding.message,
+                        source_url=source_urls.get(finding.rule.law_id),
+                    )
+                    for finding in clause.findings
+                ],
+                related=[to_hit(result, source_urls) for result in clause.related],
+            )
+            for clause in report.clauses
+        ],
     )

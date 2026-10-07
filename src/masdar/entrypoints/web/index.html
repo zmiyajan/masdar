@@ -26,6 +26,7 @@
       </a>
       <nav aria-label="روابط">
         <ul class="masthead__nav">
+          <li><a href="#check">افحص عقداً</a></li>
           <li><a href="#how">كيف يعمل؟</a></li>
           <li><a href="/docs" lang="en" dir="ltr">API</a></li>
           <li><a href="https://github.com/zmiyajan/masdar" rel="noopener noreferrer" target="_blank" lang="en" dir="ltr">GitHub</a></li>
@@ -77,6 +78,30 @@
       <section id="answer" class="answer" aria-live="polite" hidden></section>
       <p id="status" class="status" role="status" aria-live="polite"></p>
       <ol id="results" class="results__list"></ol>
+    </section>
+
+    <section id="check" class="check shell" aria-labelledby="check-title">
+      <h2 id="check-title" class="check__title">افحص عقد عمل أو سياسة موارد بشرية</h2>
+      <p class="check__lede">
+        الصق العقد أو السياسة، وسيُقسَّم إلى بنود. كل بند يذكر مدة أو ساعات أو نسبة يحدّها نظام العمل
+        يُقارن بالحد الوارد في نص المادة <strong>السارية</strong>، مع الاستشهاد بها. ما لا يمكن الجزم به
+        يظهر «يحتاج مراجعة» ولا يُحكم عليه.
+      </p>
+      <form id="check-form" class="check__form" novalidate>
+        <label for="contract" class="visually-hidden">نص العقد أو السياسة</label>
+        <textarea id="contract" class="check__input" rows="9" maxlength="20000" dir="rtl"
+          placeholder="مثال: المادة الخامسة: يخضع الموظف لفترة تجربة مدتها ستة أشهر…"></textarea>
+        <div class="check__actions">
+          <button type="submit" class="search__submit">افحص</button>
+          <button type="button" id="check-sample" class="chip">جرّب عقداً نموذجياً</button>
+        </div>
+      </form>
+      <p id="check-status" class="status" role="status" aria-live="polite"></p>
+      <ol id="check-results" class="check__list"></ol>
+      <details id="check-quiet" class="check__quiet" hidden>
+        <summary></summary>
+        <ol class="check__quiet-list"></ol>
+      </details>
     </section>
 
     <section id="how" class="how shell" aria-labelledby="how-title">

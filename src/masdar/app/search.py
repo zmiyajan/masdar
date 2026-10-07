@@ -30,6 +30,11 @@ class SearchService:
         self._candidates = candidates
 
     @property
+    def retriever(self) -> Retriever:
+        """The first stage."""
+        return self._retriever
+
+    @property
     def reranker(self) -> Reranker | None:
         """The second stage, if any; the answer layer reuses its model."""
         return self._reranker

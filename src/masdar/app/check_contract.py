@@ -9,6 +9,7 @@ model or API is involved in the verdicts; see ADR-0010.
 from collections.abc import Collection, Sequence
 
 from masdar.app.search import SearchService
+from masdar.domain.checker_quality import CheckerQualityReport, LabeledClause, score_checker
 from masdar.domain.compliance import (
     ClauseReport,
     ContractReport,
@@ -83,3 +84,19 @@ class CheckContract:
                 for clause in split_clauses(text)
             )
         )
+
+
+def measure_checker(
+    labeled: Sequence[LabeledClause], rules: Sequence[Rule]
+) -> CheckerQualityReport:
+    """Score the verdicts on labeled clauses (retrieval plays no part in a verdict).
+
+    Args:
+        labeled: Clauses with their expected ``(rule_id, kind)`` findings.
+        rules: The rules to apply, as served.
+    """
+    predicted = [
+        {(finding.rule.rule_id, finding.kind) for finding in check_clause(clause.text, rules)}
+        for clause in labeled
+    ]
+    return score_checker(labeled, predicted)

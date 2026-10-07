@@ -9,6 +9,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from entrypoints.entrypoint_fakes import ARTICLES, SOURCE_URLS, FakeRetriever
 from masdar.app.answer import AnswerService
 from masdar.app.search import SearchService
+from masdar.domain.compliance import FindingKind
 from masdar.entrypoints.mcp_server import RegulationTools, build_server
 
 
@@ -75,7 +76,7 @@ class TestServer:
     def test_registers_both_read_only_tools(self, service: SearchService) -> None:
         server = build_server(service, ARTICLES, SOURCE_URLS)
         tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
-        assert set(tools) == {"search_regulations", "get_article"}
+        assert set(tools) == {"search_regulations", "get_article", "check_contract"}
         search = tools["search_regulations"]
         assert set(search.input_schema["properties"]) == {"query", "k", "law"}
         assert search.input_schema["required"] == ["query"]
@@ -115,3 +116,20 @@ class TestAnswerQuestion:
     def test_unavailable_or_unknown_law_is_a_tool_error(self, tools: RegulationTools) -> None:
         with pytest.raises(ToolError, match="not available"):
             tools.answer_question("سؤال")
+
+
+class TestCheckContract:
+    def test_cites_the_article_for_a_violation(self, tools: RegulationTools) -> None:
+        response = tools.check_contract("يخضع الموظف لفترة تجربة مدتها مائتا يوم.")
+        [finding] = response.clauses[0].findings
+        assert (finding.rule_id, finding.kind, finding.article_id) == (
+            "probation-max",
+            "violation",
+            "labor-law:53",
+        )
+        assert finding.kind_label == "مخالفة"
+        assert response.counts[FindingKind.VIOLATION] == 1
+
+    def test_empty_text_is_a_tool_error(self, tools: RegulationTools) -> None:
+        with pytest.raises(ToolError, match="empty"):
+            tools.check_contract("   ")

@@ -21,19 +21,23 @@ from fastapi.staticfiles import StaticFiles
 
 from masdar import __version__
 from masdar.app.answer import AnswerService
+from masdar.app.check_contract import CheckContract
 from masdar.app.search import SearchService
 from masdar.config import Settings
-from masdar.container import answer_service, default_search_service
+from masdar.container import answer_service, check_contract_use_case, default_search_service
 from masdar.domain.errors import InvalidDomainObjectError, MasdarError
 from masdar.domain.search import MAX_QUERY_CHARS
 from masdar.entrypoints.laws import LawSummary, load_law_summaries
 from masdar.entrypoints.schemas import (
     AnswerResponse,
+    CheckRequest,
+    CheckResponse,
     ErrorBody,
     ErrorResponse,
     HealthResponse,
     SearchResponse,
     to_answer,
+    to_check,
     to_hit,
 )
 from masdar.entrypoints.security import RateLimiter, security_headers
@@ -90,6 +94,7 @@ def create_app(
         # Indexing is CPU-bound and slow; a worker thread keeps the loop free.
         app.state.service = service or await to_thread.run_sync(default_search_service, config)
         app.state.answers = answers if answers is not None else answer_service(app.state.service)
+        app.state.checker = check_contract_use_case(app.state.service)
         yield
 
     app = FastAPI(
@@ -159,6 +164,17 @@ def create_app(
             raise _AnswersUnavailableError
         result = current.answer(q, laws=selected or None, related=k)
         return to_answer(result, selected, current.name, source_urls)
+
+    @app.post("/api/check", response_model=CheckResponse, responses=_ERRORS, tags=["check"])
+    def check(request: Request, body: CheckRequest) -> CheckResponse:
+        """Check a contract or HR policy, clause by clause, against the Labor Law in force.
+
+        Verdicts come from rules pinned to the articles' text in force, never
+        from a model; anything uncertain is ``review_needed`` (ADR-0010).
+        """
+        selected = _known_laws(body.laws, source_urls)
+        checker: CheckContract = request.app.state.checker
+        return to_check(checker.run(body.text, laws=selected or None), source_urls)
 
     # After every real route: anything else under /api is an unknown route.
     @app.api_route(
@@ -244,7 +260,14 @@ def _install_middleware(app: FastAPI, limiter: RateLimiter, trusted_proxy_hops: 
 
 def _install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(InvalidDomainObjectError)
-    async def invalid_query(_: Request, error: InvalidDomainObjectError) -> JSONResponse:
+    async def invalid_query(request: Request, error: InvalidDomainObjectError) -> JSONResponse:
+        if request.url.path == "/api/check":
+            return _error(
+                422,
+                "invalid_document",
+                str(error),
+                "النص فارغ أو أطول من المسموح (20,000 حرف).",
+            )
         return _error(
             422,
             "invalid_query",
@@ -271,9 +294,17 @@ def _install_error_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def invalid_request(_: Request, error: RequestValidationError) -> JSONResponse:
+    async def invalid_request(request: Request, error: RequestValidationError) -> JSONResponse:
         # Name the offending parameters only; echoing values back is never needed.
         fields = sorted({str(e["loc"][-1]) for e in error.errors() if e.get("loc")})
+        if request.url.path == "/api/check":
+            return _error(
+                422,
+                "invalid_request",
+                f"Invalid or missing fields: {', '.join(fields)}. "
+                "Send JSON with text (up to 20,000 characters) and optional laws.",
+                "أرسل نص العقد أو السياسة (حتى 20,000 حرف).",
+            )
         return _error(
             422,
             "invalid_request",

@@ -373,4 +373,122 @@
         search(question);
       }
     });
+
+  // ------------------------------------------------------------ contract checker
+  const checkForm = document.getElementById("check-form");
+  const contract = document.getElementById("contract");
+  const checkStatus = document.getElementById("check-status");
+  const checkList = document.getElementById("check-results");
+  const quiet = document.getElementById("check-quiet");
+  const SAMPLE_CONTRACT = [
+    "المادة الأولى: يخضع الموظف لفترة تجربة مدتها مائتا يوم من تاريخ مباشرته العمل.",
+    "المادة الثانية: ساعات العمل عشر ساعات يومياً من الأحد إلى الخميس.",
+    "المادة الثالثة: يستحق الموظف إجازة سنوية مدتها واحد وعشرون يوماً بأجر كامل.",
+    "المادة الرابعة: يحق لصاحب العمل إنهاء العقد غير محدد المدة بإشعار كتابي قبل ثلاثين يوماً.",
+    "المادة الخامسة: يلتزم الموظف بعدم منافسة صاحب العمل لمدة ثلاث سنوات بعد انتهاء العقد.",
+    "المادة السادسة: يلتزم الموظف بالمحافظة على سرية المعلومات وعدم إفشائها.",
+  ].join("\n");
+
+  function renderFinding(finding) {
+    const box = document.createElement("div");
+    box.className = "finding";
+    box.dataset.kind = finding.kind;
+    const head = document.createElement("p");
+    head.className = "finding__head";
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = finding.kind_label;
+    head.append(badge);
+    if (finding.source_url) {
+      const link = document.createElement("a");
+      link.className = "finding__source";
+      link.href = finding.source_url;
+      link.rel = "noopener noreferrer";
+      link.target = "_blank";
+      link.textContent = finding.citation;
+      head.append(link);
+    } else {
+      head.append(document.createTextNode(finding.citation));
+    }
+    const message = document.createElement("p");
+    message.className = "finding__message";
+    message.textContent = finding.message;
+    box.append(head, message);
+    return box;
+  }
+
+  function renderClause(clause) {
+    const item = document.createElement("li");
+    item.className = "clause";
+    const text = document.createElement("p");
+    text.className = "clause__text";
+    text.textContent = clause.text;
+    item.append(text, ...clause.findings.map(renderFinding));
+    return item;
+  }
+
+  function renderCheck(body) {
+    const judged = body.clauses.filter((clause) => clause.findings.length);
+    const others = body.clauses.filter((clause) => !clause.findings.length);
+    checkList.replaceChildren(...judged.map(renderClause));
+    const { violation = 0, compliant = 0, review_needed: review = 0 } = body.counts;
+    checkStatus.dataset.tone = "";
+    checkStatus.textContent = judged.length
+      ? `${body.clauses.length} بنداً: ${violation} مخالفة، ${compliant} متوافق، ${review} يحتاج مراجعة.`
+      : "لم نجد في النص مدداً أو ساعات أو نسباً يحدّها نظام العمل. راجع المواد المتعلقة أدناه.";
+    const quietList = quiet.querySelector("ol");
+    quietList.replaceChildren(...others.map((clause) => {
+      const line = document.createElement("li");
+      const related = clause.related[0];
+      line.textContent = related ? `${clause.text}  ←  ${related.citation}` : clause.text;
+      return line;
+    }));
+    quiet.querySelector("summary").textContent = `بنود بلا حكم رقمي (${others.length}) وأقرب مادة لكل منها`;
+    quiet.hidden = !others.length;
+  }
+
+  async function check(text) {
+    checkStatus.dataset.tone = "";
+    checkStatus.textContent = "جارٍ الفحص…";
+    checkList.replaceChildren();
+    quiet.hidden = true;
+    const submit = checkForm.querySelector("[type=submit]");
+    submit.disabled = true;
+    try {
+      const response = await fetch("/api/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        checkStatus.dataset.tone = "error";
+        checkStatus.textContent = body?.error?.message_ar || "تعذّر فحص النص. حاول مرة أخرى.";
+        return;
+      }
+      renderCheck(body);
+    } catch {
+      checkStatus.dataset.tone = "error";
+      checkStatus.textContent = "تعذّر الاتصال بالخادم. تحقّق من اتصالك ثم أعد المحاولة.";
+    } finally {
+      submit.disabled = false;
+    }
+  }
+
+  checkForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const text = contract.value.trim();
+    if (!text) {
+      checkStatus.dataset.tone = "error";
+      checkStatus.textContent = "الصق نص العقد أو السياسة أولاً، أو جرّب العقد النموذجي.";
+      contract.focus();
+      return;
+    }
+    check(text);
+  });
+
+  document.getElementById("check-sample").addEventListener("click", () => {
+    contract.value = SAMPLE_CONTRACT;
+    check(SAMPLE_CONTRACT);
+  });
 })();
