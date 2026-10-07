@@ -12,12 +12,12 @@ the article is about, which measured better than the text alone (ADR-0007).
 
 import threading
 from collections.abc import Sequence
-from typing import Protocol
 
 from masdar.adapters.torch_device import select_device
 from masdar.domain.chunking import context_line
 from masdar.domain.errors import InvalidDomainObjectError
 from masdar.domain.models import Chunk, Hit
+from masdar.ports.pair_scorer import PairScorer
 
 DEFAULT_RERANKER_MODEL = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
 """Default cross-encoder: multilingual MiniLM fine-tuned on mMARCO.
@@ -43,14 +43,6 @@ A batch is padded to its longest pair, so a few long articles set the cost of
 all 30. Cutting at 256 tokens kept nDCG@10 (0.888 vs 0.879 at 512) and cut the
 2-thread CPU median from about 1.6 s to 0.57 s (ADR-0007).
 """
-
-
-class PairScorer(Protocol):
-    """Scores (question, passage) pairs; the seam that keeps tests model-free."""
-
-    def score(self, pairs: Sequence[tuple[str, str]]) -> Sequence[float]:
-        """Return one relevance score per pair, higher is better."""
-        ...
 
 
 class SentenceTransformerPairScorer:
@@ -121,6 +113,11 @@ class CrossEncoderReranker:
     def name(self) -> str:
         """Identifier, ``"rerank"`` by default."""
         return self._name
+
+    @property
+    def scorer(self) -> PairScorer:
+        """The pair scorer, shared with the answer layer so the model loads once."""
+        return self._scorer
 
     def rerank(self, query: str, hits: Sequence[Hit], k: int) -> list[Hit]:
         """Return the best ``k`` of ``hits`` for ``query``, best first, ranks from 1.
